@@ -1,0 +1,96 @@
+{
+  "floatingNode": {
+    "id": "f26de4c1-5d5d-44fc-bac2-d820b4fd2215",
+    "name": "Run Banking Operations",
+    "description": "Value Stream: Run Banking Operations",
+    "layer": "Business",
+    "type": "ValueStream",
+    "status": "AS-IS",
+    "owner": "ea@banco.pt",
+    "criticality": "Medium",
+    "createdById": "db789791-da57-4502-b18c-3ff91d2815bf",
+    "version": null,
+    "lifecycle": "Run",
+    "validFrom": null,
+    "validTo": null,
+    "strategicValue": "High",
+    "technicalFit": null,
+    "complexity": "Medium",
+    "tags": "ValueStream",
+    "metadata": null,
+    "externalLink": null,
+    "bianBusinessArea": null,
+    "bianBusinessDomain": null,
+    "bianFunctionalPattern": null,
+    "bianActionTerm": null,
+    "httpMethod": null,
+    "path": null,
+    "leanIXFactSheetType": null,
+    "leanIXExternalId": null,
+    "createdAt": "2026-02-24T16:58:11.317Z",
+    "updatedAt": "2026-02-24T16:58:11.317Z"
+  },
+  "selectedNode": {
+    "id": "b610972a-4fc9-4830-9b52-4eff59cc5807",
+    "name": "Branch Location Operations",
+    "description": "BIAN v12 Service Domain | Business Area: Sales and Service | Business Domain: Channel Specific",
+    "layer": "BIAN",
+    "type": "ServiceDomain",
+    "status": "AS-IS",
+    "owner": "ea@banco.pt",
+    "criticality": "Medium",
+    "createdById": "db789791-da57-4502-b18c-3ff91d2815bf",
+    "version": null,
+    "lifecycle": "Run",
+    "validFrom": null,
+    "validTo": null,
+    "strategicValue": "High",
+    "technicalFit": null,
+    "complexity": "Medium",
+    "tags": "BIAN,v12,Sales and Service,Channel Specific",
+    "metadata": null,
+    "externalLink": null,
+    "bianBusinessArea": null,
+    "bianBusinessDomain": null,
+    "bianFunctionalPattern": null,
+    "bianActionTerm": null,
+    "httpMethod": null,
+    "path": null,
+    "leanIXFactSheetType": null,
+    "leanIXExternalId": null,
+    "createdAt": "2026-02-24T16:58:11.475Z",
+    "updatedAt": "2026-02-24T16:58:11.475Z"
+  },
+  "floatingRelations": [
+    {
+      "relId": "af5dbf37-4cae-4369-b0be-f611f469b318",
+      "relType": "Composed Of",
+      "otherId": "d4efab1b-9868-465f-82ff-cc6cd57ecff0",
+      "otherName": "Manage Branch Operations"
+    },
+    {
+      "relId": "bd50a0dd-3f96-417a-847e-d4477e9cd673",
+      "relType": "Composed Of",
+      "otherId": "c39dd055-955b-4b70-b9bc-9ad281edb49e",
+      "otherName": "Manage ATM Network"
+    },
+    {
+      "relId": "50e7af7b-387e-4d5b-b78d-d559e038dd04",
+      "relType": "Composed Of",
+      "otherId": "d851c1f4-7047-4826-ae3e-b66c07d80ade",
+      "otherName": "Manage Digital Channels"
+    },
+    {
+      "relId": "65965d0c-d10a-4174-9518-390890e54918",
+      "relType": "Composed Of",
+      "otherId": "c3542dee-21cb-46ad-a175-4af21657d865",
+      "otherName": "Manage IT Operations"
+    },
+    {
+      "relId": "49cea782-a29d-45bb-9e66-3f62e43485c1",
+      "relType": "Composed Of",
+      "otherId": "0218f468-06e1-47a6-850d-46f1512cbc9f",
+      "otherName": "Manage Procurement"
+    }
+  ]
+}

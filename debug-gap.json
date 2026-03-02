@@ -1,0 +1,69 @@
+
+=== PROJECT: Olá teste ===
+[Gap Change] OP: ADD, Component: null (sbb) - ID: SBB-GCP-001
+
+  -- As-Is Snapshots --
+  [As-Is] BC-PLAT-090 (bc)
+  [As-Is] DC-DE-010 (dc)
+  [As-Is] ABB-DATA-001 (abb)
+  [As-Is] CUSTOM-SBB-1770132511590 (sbb)
+
+  -- Target Snapshots --
+  [Target] BC-PLAT-090 (bc)
+  [Target] DC-DE-010 (dc)
+  [Target] ABB-DATA-001 (abb)
+  [Target] CUSTOM-SBB-1770132511590 (sbb)
+
+=== PROJECT: Simulador PARE ===
+[Gap Change] OP: REMOVE, Component: null (abb) - ID: CUSTOM-ABB-1770829902567
+[Gap Change] OP: ADD, Component: PEMP (abb) - ID: CUSTOM-ABB-1770831495134
+    Data: {
+  id: 'CUSTOM-ABB-1770831495134',
+  name: 'PEMP',
+  type: 'abb',
+  description: '',
+  layer: 'Application',
+  lifecycle: 'Plan',
+  strategicValue: 'Medium',
+  technicalFit: 'Adequate',
+  complexity: 'Medium'
+}
+[Gap Change] OP: ADD_RELATION, Component: null (relation) - ID: REL-CUSTOM-DC-1770829841998-CUSTOM-ABB-1770831495134
+    Data: {
+  sourceId: 'CUSTOM-DC-1770829841998',
+  targetId: 'CUSTOM-ABB-1770831495134'
+}
+[Gap Change] OP: ADD_RELATION, Component: null (relation) - ID: REL-CUSTOM-ABB-1770831495134-CUSTOM-SBB-1770829913830
+    Data: {
+  sourceId: 'CUSTOM-ABB-1770831495134',
+  targetId: 'CUSTOM-SBB-1770829913830'
+}
+[Gap Change] OP: ADD, Component: Camunda (sbb) - ID: CUSTOM-SBB-1770831552028
+    Data: {
+  id: 'CUSTOM-SBB-1770831552028',
+  name: 'Camunda',
+  type: 'sbb',
+  description: 'Workflow and batch management',
+  layer: 'Technology',
+  lifecycle: 'Plan',
+  strategicValue: 'Medium',
+  technicalFit: 'Adequate',
+  complexity: 'Medium'
+}
+[Gap Change] OP: ADD_RELATION, Component: null (relation) - ID: REL-CUSTOM-ABB-1770831495134-CUSTOM-SBB-1770831552028
+    Data: {
+  sourceId: 'CUSTOM-ABB-1770831495134',
+  targetId: 'CUSTOM-SBB-1770831552028'
+}
+
+  -- As-Is Snapshots --
+  [As-Is] CUSTOM-BC-1770829811839 (bc)
+  [As-Is] CUSTOM-DC-1770829841998 (dc)
+  [As-Is] CUSTOM-ABB-1770829902567 (abb)
+  [As-Is] CUSTOM-SBB-1770829913830 (sbb)
+
+  -- Target Snapshots --
+  [Target] CUSTOM-BC-1770829811839 (bc)
+  [Target] CUSTOM-DC-1770829841998 (dc)
+  [Target] CUSTOM-ABB-1770829902567 (abb)
+  [Target] CUSTOM-SBB-1770829913830 (sbb)

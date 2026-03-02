@@ -1,0 +1,229 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  username     String   @unique
+  passwordHash String
+  email        String   @unique
+  role         String   @default("Viewer") // Admin, Architect, Viewer
+  createdAt    DateTime @default(now())
+
+  componentsCreated Component[]   @relation("CreatedBy")
+  activityLogs      ActivityLog[]
+
+  status       String   @default("Active") // Active, Suspended, Inactive
+}
+
+model Component {
+  id          String  @id @default(uuid())
+  name        String
+  description String?
+  layer       String // Business, Application, Technology, Data
+  type        String // e.g. Process, Service, Server
+  status      String // As-Is, Target, Transitional
+  owner       String?
+  criticality String // Low, Medium, High, Critical
+
+  createdById String
+  createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
+
+  // --- NEW FIELDS ---
+  // 1. Lifecycle & Versioning
+  version     String?   
+  lifecycle   String?   // Plan, Build, Run, Retire
+  validFrom   DateTime?
+  validTo     DateTime?
+
+  // 2. Strategic & Assessment
+  strategicValue String? // Low, Medium, High, Critical
+  technicalFit   String? // Poor, Adequate, Good, Excellent
+  complexity     String? // Low, Medium, High
+
+  // 3. Metadata & Flexibility
+  tags        String?   // Comma-separated tags
+  metadata    String?   // JSON string for arbitrary custom fields
+  externalLink String?  
+
+  // --- 5-LAYER TAXONOMY & BIAN NEW FIELDS ---
+  bianBusinessArea      String?
+  bianBusinessDomain    String?
+  bianFunctionalPattern String?
+  bianActionTerm        String?
+  httpMethod            String?
+  path                  String?
+
+  leanIXFactSheetType   String?
+  leanIXExternalId      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships where this component is the source
+  outgoingRelations Relationship[] @relation("SourceComponent")
+  // Relationships where this component is the target
+  incomingRelations Relationship[] @relation("TargetComponent")
+
+  projects         ProjectComponent[]
+  ComponentHistory ComponentHistory[]
+}
+
+model Relationship {
+  id                String   @id @default(uuid())
+  sourceComponentId String
+  targetComponentId String
+  type              String // Composition, Flow, Serving, etc.
+  description       String?
+
+  // Project Scoping & Gap Engine fields
+  projectId         String?
+  state             String? @default("AS-IS") // "AS-IS", "GAP", "TARGET"
+  coverageType      String? // "Full", "Partial", "Planned"
+
+  createdAt         DateTime @default(now())
+
+  sourceComponent Component @relation("SourceComponent", fields: [sourceComponentId], references: [id])
+  targetComponent Component @relation("TargetComponent", fields: [targetComponentId], references: [id])
+}
+
+model Project {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String // Planned, In Progress, Completed
+
+  // Evolution tracking
+  currentState String @default("AS-IS") // AS-IS, EDITING, TARGET
+
+  asIsSnapshots   ProjectSnapshot[]  @relation("AsIsSnapshot")
+  targetSnapshots ProjectSnapshot[]  @relation("TargetSnapshot")
+  changes         ProjectChange[]
+  components      ProjectComponent[]
+  gaps            Gap[]
+}
+
+model ProjectSnapshot {
+  id           String @id @default(uuid())
+  projectId    String
+  snapshotType String // AS-IS, TARGET
+
+  // Catalog references (one of these will be set)
+  catalogComponentId   String
+  catalogComponentType String // bc, dc, abb, sbb
+
+  // Metadata
+  notes   String?
+  addedAt DateTime @default(now())
+
+  projectAsIs   Project? @relation("AsIsSnapshot", fields: [projectId], references: [id], onDelete: Cascade)
+  projectTarget Project? @relation("TargetSnapshot", fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId, snapshotType])
+}
+
+model ProjectChange {
+  id            String   @id @default(uuid())
+  projectId     String
+  operation     String // ADD, MODIFY, REMOVE
+  componentId   String
+  componentType String // bc, dc, abb, sbb, relation
+  description   String?
+  componentName String? // For custom components
+  componentData String? // JSON string with extra data / draft attributes
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt // Track last modification time for conflict resolution
+
+  gapId         String? 
+  gap           Gap?    @relation(fields: [gapId], references: [id])
+  
+  gapPhaseId    String?
+  gapPhase      GapPhase? @relation(fields: [gapPhaseId], references: [id])
+
+  data          String? // Generic JSON data for extra properties
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model Gap {
+  id          String   @id @default(uuid())
+  projectId   String
+  title       String
+  description String?
+  status      String   @default("Identified") // Identified, In Progress, Completed
+  startDate   DateTime?
+  endDate     DateTime?
+  metadata    String?   // JSON for tags, responsible teams, etc.
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  phases  GapPhase[]
+  changes ProjectChange[]
+}
+
+model GapPhase {
+  id          String   @id @default(uuid())
+  gapId       String
+  name        String
+  description String?
+  startDate   DateTime?
+  endDate     DateTime?
+  status      String   @default("Pending") // Pending, In Progress, Done
+  
+  gap Gap @relation(fields: [gapId], references: [id], onDelete: Cascade)
+  changes ProjectChange[]
+}
+
+// Keep old models for backward compatibility with existing components
+model ProjectComponent {
+  projectId     String
+  componentId   String
+  roleInProject String? // e.g. Modified, New, Removed
+
+  project   Project   @relation(fields: [projectId], references: [id])
+  component Component @relation(fields: [componentId], references: [id])
+
+  @@id([projectId, componentId])
+}
+
+model ProjectVersion {
+  id          String   @id @default(uuid())
+  projectId   String
+  description String?
+  snapshots   String // JSON string of snapshot data
+  createdAt   DateTime @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String
+  resource  String
+  details   String?
+  timestamp DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ComponentHistory {
+  id          String   @id @default(uuid())
+  componentId String
+  projectId   String // Traceability
+  version     Int
+  snapshot    String // JSON string of the component state
+  changedBy   String
+  changedAt   DateTime @default(now())
+
+  component Component @relation(fields: [componentId], references: [id], onDelete: Cascade)
+}

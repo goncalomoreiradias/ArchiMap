@@ -1,0 +1,50 @@
+Dumping first 20 changes:
+--------------------------------------------------
+ID: 148a7bc8-b13e-4abe-bfd3-ef0b31b5ae9d
+Op: ADD_RELATION
+Type: relation
+CompID: REL-CUSTOM-ABB-1770831495134-CUSTOM-SBB-1770829913830
+RowData (data field): null
+CompData (componentData field): {"sourceId":"CUSTOM-ABB-1770831495134","targetId":"CUSTOM-SBB-1770829913830"}
+--------------------------------------------------
+ID: 2b645d5f-fb51-4da1-96cf-2529fbf4f9db
+Op: ADD_RELATION
+Type: relation
+CompID: REL-CUSTOM-ABB-1770831495134-CUSTOM-SBB-1770831552028
+RowData (data field): null
+CompData (componentData field): {"sourceId":"CUSTOM-ABB-1770831495134","targetId":"CUSTOM-SBB-1770831552028"}
+--------------------------------------------------
+ID: 4e01d49d-85d6-4561-8b2a-431486b826c5
+Op: ADD
+Type: sbb
+CompID: CUSTOM-SBB-1770831552028
+RowData (data field): null
+CompData (componentData field): {"id":"CUSTOM-SBB-1770831552028","name":"Camunda","type":"sbb","description":"Workflow and batch management","layer":"Technology","lifecycle":"Plan","strategicValue":"Medium","technicalFit":"Adequate","complexity":"Medium"}
+--------------------------------------------------
+ID: 5e8e3cb8-9af4-42a9-9b4f-23ad4d941cd5
+Op: REMOVE
+Type: abb
+CompID: CUSTOM-ABB-1770829902567
+RowData (data field): null
+CompData (componentData field): null
+--------------------------------------------------
+ID: 8f40a04f-043d-4e1d-bbcd-72b6b5ac4e54
+Op: ADD_RELATION
+Type: relation
+CompID: REL-CUSTOM-DC-1770829841998-CUSTOM-ABB-1770831495134
+RowData (data field): null
+CompData (componentData field): {"sourceId":"CUSTOM-DC-1770829841998","targetId":"CUSTOM-ABB-1770831495134"}
+--------------------------------------------------
+ID: d6ca010e-7cc2-4206-a16c-0c7135704c50
+Op: ADD
+Type: abb
+CompID: CUSTOM-ABB-1770831495134
+RowData (data field): null
+CompData (componentData field): {"id":"CUSTOM-ABB-1770831495134","name":"PEMP","type":"abb","description":"","layer":"Application","lifecycle":"Plan","strategicValue":"Medium","technicalFit":"Adequate","complexity":"Medium"}
+--------------------------------------------------
+ID: fa5d5adc-4231-43af-8397-964bb5f9aa00
+Op: ADD
+Type: sbb
+CompID: SBB-GCP-001
+RowData (data field): null
+CompData (componentData field): null

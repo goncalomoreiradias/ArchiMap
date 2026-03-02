@@ -1,0 +1,794 @@
+{
+  "users": [
+    {
+      "id": "admin-id",
+      "username": "admin",
+      "passwordHash": "$2a$10$abcdef",
+      "role": "Admin"
+    },
+    {
+      "id": "ff29604b-4b8a-446d-b712-34aeafcf8564",
+      "createdAt": "2026-01-26T11:40:34.155Z",
+      "username": "demo",
+      "email": "demo@demo.pt",
+      "role": "Viewer",
+      "passwordHash": "$2b$10$jwyQ1tQfp3iUA5IDIUIhmOVMNvf69oQ9o6ckSqBNH.NXrK/g5Y7NW"
+    },
+    {
+      "id": "5f652205-2908-437f-97d2-6e3f548b6ef0",
+      "createdAt": "2026-01-27T14:44:27.319Z",
+      "username": "Archi",
+      "email": "architect@demo.pt",
+      "role": "Architect",
+      "passwordHash": "$2b$10$ichFsaw0.7nTlrWbmnIbP.wF/kxoW102yITF5BMkyk.QoXoWTQMSe",
+      "status": "Active"
+    }
+  ],
+  "components": [
+    {
+      "id": "c1",
+      "name": "SEPA Credit Transfer",
+      "layer": "Business",
+      "type": "Service",
+      "status": "As-Is",
+      "description": "Standard Euro payment processing",
+      "criticality": "Critical",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c2",
+      "name": "Instant Payments (SCT Inst)",
+      "layer": "Business",
+      "type": "Service",
+      "status": "Target",
+      "description": "Real-time Euro payments < 10s",
+      "criticality": "High",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c3",
+      "name": "PSD2 TPP Interface",
+      "layer": "Business",
+      "type": "Interface",
+      "status": "As-Is",
+      "description": "Third Party Provider access",
+      "criticality": "Critical",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c4",
+      "name": "KYC/AML Compliance",
+      "layer": "Business",
+      "type": "Process",
+      "status": "As-Is",
+      "description": "Anti-money laundering checks",
+      "criticality": "High",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c5",
+      "name": "Core Banking (Temenos T24)",
+      "layer": "Application",
+      "type": "Component",
+      "status": "As-Is",
+      "description": "Legacy Core System",
+      "criticality": "Critical",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c6",
+      "name": "Open Banking API Gateway",
+      "layer": "Application",
+      "type": "Component",
+      "status": "Target",
+      "description": "MuleSoft API Layer",
+      "criticality": "High",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c7",
+      "name": "Risk Engine",
+      "layer": "Application",
+      "type": "Component",
+      "status": "As-Is",
+      "description": "Fraud detection system",
+      "criticality": "High",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c8",
+      "name": "Mobile Banking App",
+      "layer": "Application",
+      "type": "Interface",
+      "status": "Target",
+      "description": "Flutter based native app",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c9",
+      "name": "Customer Master Data",
+      "layer": "Data",
+      "type": "Data Object",
+      "status": "As-Is",
+      "description": "Single view of customer",
+      "criticality": "Critical",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c10",
+      "name": "Transaction Ledger",
+      "layer": "Data",
+      "type": "Data Object",
+      "status": "As-Is",
+      "description": "Immutable transaction records",
+      "criticality": "Critical",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c11",
+      "name": "Consent Registry",
+      "layer": "Data",
+      "type": "Data Object",
+      "status": "Target",
+      "description": "GDPR & PSD2 consent records",
+      "criticality": "High",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c12",
+      "name": "On-Premise Data Center (Frankfurt)",
+      "layer": "Technology",
+      "type": "Location",
+      "status": "As-Is",
+      "description": "Primary DC",
+      "criticality": "Critical",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c13",
+      "name": "Azure Cloud West Europe",
+      "layer": "Technology",
+      "type": "Location",
+      "status": "Target",
+      "description": "Target Cloud Region",
+      "criticality": "High",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "c14",
+      "name": "K8s Cluster Production",
+      "layer": "Technology",
+      "type": "System Software",
+      "status": "Target",
+      "description": "Container orchestration",
+      "criticality": "High",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "DC-DE-010",
+      "createdAt": "2026-01-22T16:19:36.174Z",
+      "updatedAt": "2026-01-22T16:19:36.174Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "dc",
+      "status": "As-Is",
+      "description": "Add Batch ingestion (ETL/ELT)",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "BC-PLAT-090",
+      "createdAt": "2026-01-22T16:40:55.504Z",
+      "updatedAt": "2026-01-22T16:40:55.504Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "bc",
+      "status": "As-Is",
+      "description": "Add Enterprise Data Platform (GCP-first)",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "DC-DE-011",
+      "createdAt": "2026-01-22T16:40:55.507Z",
+      "updatedAt": "2026-01-22T16:40:55.507Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "dc",
+      "status": "As-Is",
+      "description": "Add Streaming/event ingestion (Related)",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "ABB-DATA-002",
+      "createdAt": "2026-01-22T17:05:28.032Z",
+      "updatedAt": "2026-01-22T17:05:28.032Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "abb",
+      "status": "As-Is",
+      "description": "Add Batch ingestion",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "ABB-DATA-001",
+      "createdAt": "2026-01-22T17:29:55.068Z",
+      "updatedAt": "2026-01-22T17:29:55.068Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "abb",
+      "status": "As-Is",
+      "description": "Add Data landing zone (raw/bronze)",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "SBB-GCP-004",
+      "createdAt": "2026-01-22T17:29:55.074Z",
+      "updatedAt": "2026-01-22T17:29:55.074Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "sbb",
+      "status": "As-Is",
+      "description": "Add Dataflow",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "SBB-OTH-205",
+      "createdAt": "2026-01-22T17:54:03.791Z",
+      "updatedAt": "2026-01-22T17:54:03.791Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "sbb",
+      "status": "As-Is",
+      "description": "Add LLM observability/eval tool (3rd party) (Related)",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "SBB-GCP-001",
+      "createdAt": "2026-01-22T18:19:32.399Z",
+      "updatedAt": "2026-01-22T18:19:32.399Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "sbb",
+      "status": "As-Is",
+      "description": "Add Google Cloud Storage (GCS) (Related)",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "CUSTOM-BC-1769444510748",
+      "createdAt": "2026-01-26T16:22:49.652Z",
+      "updatedAt": "2026-01-26T16:22:49.652Z",
+      "name": "xxxxx",
+      "layer": "Business",
+      "type": "bc",
+      "status": "As-Is",
+      "description": "weff",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "SBB-GCP-007",
+      "createdAt": "2026-01-26T16:22:49.656Z",
+      "updatedAt": "2026-01-26T16:22:49.656Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "sbb",
+      "status": "As-Is",
+      "description": "Add Dataplex (Related)",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    },
+    {
+      "id": "ABB-DATA-008",
+      "createdAt": "2026-01-26T16:22:49.659Z",
+      "updatedAt": "2026-01-26T16:22:49.659Z",
+      "name": "New Component",
+      "layer": "Business",
+      "type": "abb",
+      "status": "As-Is",
+      "description": "Add Data quality & observability (Related)",
+      "criticality": "Medium",
+      "createdById": "admin-id"
+    }
+  ],
+  "relationships": [
+    {
+      "id": "r1",
+      "sourceId": "c1",
+      "targetId": "c5",
+      "type": "ServedBy",
+      "description": "Realized by Core Banking"
+    },
+    {
+      "id": "r2",
+      "sourceId": "c3",
+      "targetId": "c6",
+      "type": "ServedBy",
+      "description": "API Gateway serves PSD2"
+    },
+    {
+      "id": "r3",
+      "sourceId": "c5",
+      "targetId": "c9",
+      "type": "Access",
+      "description": "Reads/Writes Customer Data"
+    },
+    {
+      "id": "r4",
+      "sourceId": "c5",
+      "targetId": "c10",
+      "type": "Access",
+      "description": "Updates Ledger"
+    },
+    {
+      "id": "r5",
+      "sourceId": "c6",
+      "targetId": "c11",
+      "type": "Access",
+      "description": "Verifies Consent"
+    },
+    {
+      "id": "r6",
+      "sourceId": "c5",
+      "targetId": "c12",
+      "type": "HostedOn",
+      "description": "Runs on On-Prem DC"
+    },
+    {
+      "id": "r7",
+      "sourceId": "c6",
+      "targetId": "c14",
+      "type": "HostedOn",
+      "description": "Runs on K8s"
+    },
+    {
+      "id": "r8",
+      "sourceId": "c14",
+      "targetId": "c13",
+      "type": "HostedOn",
+      "description": "K8s hosted in Azure"
+    },
+    {
+      "id": "r9",
+      "sourceId": "c8",
+      "targetId": "c6",
+      "type": "Flow",
+      "description": "Mobile calls API Gateway"
+    },
+    {
+      "id": "c3bedf67-3f7f-421d-836f-c2ab20b471ca",
+      "createdAt": "2026-01-22T16:40:55.510Z",
+      "sourceComponentId": "BC-PLAT-090",
+      "targetComponentId": "DC-DE-011",
+      "type": "Flow",
+      "description": "Connect BC-PLAT-090 to DC-DE-011"
+    },
+    {
+      "id": "e40ded52-5dba-47c0-8dae-8c167a498bd3",
+      "createdAt": "2026-01-22T17:29:55.077Z",
+      "sourceComponentId": "ABB-DATA-001",
+      "targetComponentId": "SBB-GCP-004",
+      "type": "Flow",
+      "description": "Connect ABB-DATA-001 to SBB-GCP-004"
+    },
+    {
+      "id": "b2369741-c53e-4a85-a1e4-ab2afa1f4d30",
+      "createdAt": "2026-01-22T17:54:03.796Z",
+      "sourceComponentId": "BC-PLAT-090",
+      "targetComponentId": "DC-DE-010",
+      "type": "Flow",
+      "description": "Connect BC-PLAT-090 to DC-DE-010"
+    },
+    {
+      "id": "29630536-7911-43a7-8769-cc4bb580ba0c",
+      "createdAt": "2026-01-22T17:54:03.801Z",
+      "sourceComponentId": "ABB-DATA-001",
+      "targetComponentId": "SBB-OTH-205",
+      "type": "Flow",
+      "description": "Connect ABB-DATA-001 to SBB-OTH-205"
+    },
+    {
+      "id": "8592eca8-e617-4e5a-8ae0-c48bc679c8c5",
+      "createdAt": "2026-01-26T16:22:49.665Z",
+      "sourceComponentId": "CUSTOM-BC-1769444510748",
+      "targetComponentId": "DC-DE-010",
+      "type": "Flow",
+      "description": "Connect CUSTOM-BC-1769444510748 to DC-DE-010"
+    },
+    {
+      "id": "219fbdb8-ad18-4193-ad70-6dfd11208e59",
+      "createdAt": "2026-01-26T16:22:49.669Z",
+      "sourceComponentId": "DC-DE-010",
+      "targetComponentId": "SBB-GCP-007",
+      "type": "Flow",
+      "description": "Connect DC-DE-010 to SBB-GCP-007"
+    },
+    {
+      "id": "c07b21c3-fa93-49e6-b10b-02c19c7a5231",
+      "createdAt": "2026-01-26T16:22:49.672Z",
+      "sourceComponentId": "SBB-GCP-007",
+      "targetComponentId": "ABB-DATA-008",
+      "type": "Flow",
+      "description": "Connect SBB-GCP-007 to ABB-DATA-008"
+    }
+  ],
+  "projects": [
+    {
+      "id": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "name": "GenAI Customer Service Transformation",
+      "description": "Implementation of Generative AI for customer support, including Agent Assist, Self-Service Chatbots, and Automated Case Summarization. Leveraging GCP Vertex AI and RAG architecture.",
+      "status": "In Progress",
+      "startDate": "2026-02-01",
+      "endDate": "2026-08-30",
+      "currentState": "AS-IS",
+      "impactedComponents": []
+    },
+    {
+      "id": "45f39695-2113-45f9-9cdb-b3dcf35f2eaa",
+      "currentState": "AS-IS",
+      "name": "Plataforma de CH",
+      "description": "PCH",
+      "status": "Draft",
+      "startDate": "2026-01-23",
+      "endDate": null,
+      "impactedComponents": []
+    },
+    {
+      "id": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "currentState": "AS-IS",
+      "name": "xxx",
+      "description": "",
+      "status": "In Progress",
+      "startDate": "2026-01-26",
+      "endDate": null,
+      "impactedComponents": []
+    }
+  ],
+  "projectSnapshots": [
+    {
+      "id": "f96c0c98-f52b-4ec3-8768-89bad02f5319",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "snapshotType": "AS-IS",
+      "catalogComponentId": "BC-CUST-010",
+      "catalogComponentType": "bc",
+      "notes": "Core capability: Agent Assist (GenAI) for contact center",
+      "createdAt": "2026-01-21T12:07:14.820Z"
+    },
+    {
+      "id": "543595fb-8e2f-43a7-bb0e-68f77797a87e",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "snapshotType": "AS-IS",
+      "catalogComponentId": "BC-CUST-011",
+      "catalogComponentType": "bc",
+      "notes": "Core capability: Self-service conversational assistant (chat/voice)",
+      "createdAt": "2026-01-21T12:07:14.821Z"
+    },
+    {
+      "id": "7952c56f-2d69-4d53-8a70-73614de1d52c",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "snapshotType": "AS-IS",
+      "catalogComponentId": "BC-CUST-012",
+      "catalogComponentType": "bc",
+      "notes": "Core capability: Case summarization & next-step suggestions",
+      "createdAt": "2026-01-21T12:07:14.822Z"
+    },
+    {
+      "id": "f84c1532-4a17-4b7f-b911-4810dba70563",
+      "addedAt": "2026-01-23T14:12:43.381Z",
+      "projectId": "45f39695-2113-45f9-9cdb-b3dcf35f2eaa",
+      "snapshotType": "AS-IS",
+      "catalogComponentId": "BC-PLAT-090",
+      "catalogComponentType": "bc",
+      "notes": "Adopted from target state"
+    },
+    {
+      "id": "9a18e13c-73ba-4291-8975-f43704338001",
+      "addedAt": "2026-01-26T16:23:11.658Z",
+      "projectId": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "snapshotType": "AS-IS",
+      "catalogComponentId": "CUSTOM-BC-1769444510748",
+      "catalogComponentType": "bc",
+      "notes": "Adopted from target state"
+    },
+    {
+      "id": "3ac73882-ced0-4127-90e8-c8d9706303b8",
+      "addedAt": "2026-01-26T16:23:11.658Z",
+      "projectId": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "snapshotType": "AS-IS",
+      "catalogComponentId": "DC-DE-010",
+      "catalogComponentType": "dc",
+      "notes": "Adopted from target state"
+    },
+    {
+      "id": "9c876f65-bda0-49d8-9a54-4ea16a304ab6",
+      "addedAt": "2026-01-26T16:23:11.658Z",
+      "projectId": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "snapshotType": "AS-IS",
+      "catalogComponentId": "SBB-GCP-007",
+      "catalogComponentType": "sbb",
+      "notes": "Adopted from target state"
+    },
+    {
+      "id": "8978f40d-30f1-4812-bf0f-1856c6dad810",
+      "addedAt": "2026-01-26T16:23:11.658Z",
+      "projectId": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "snapshotType": "AS-IS",
+      "catalogComponentId": "ABB-DATA-008",
+      "catalogComponentType": "abb",
+      "notes": "Adopted from target state"
+    }
+  ],
+  "projectChanges": [
+    {
+      "id": "7a3651b4-e4c0-4837-883c-9c6f445e4d64",
+      "createdAt": "2026-01-21T12:16:56.649Z",
+      "changeType": "ADD",
+      "componentId": "BC-PLAT-090",
+      "componentType": "bc",
+      "description": "Added Enterprise Data Platform (GCP-first)"
+    },
+    {
+      "id": "ac770a90-c6e8-4c7f-b848-fad7c5b66ed2",
+      "createdAt": "2026-01-21T12:17:11.585Z",
+      "changeType": "ADD",
+      "componentId": "BC-CUST-001",
+      "componentType": "bc",
+      "description": "Added KYC automation (doc+data verification)"
+    },
+    {
+      "id": "fc731637-e064-4fdc-ad34-4fc0f6544a5e",
+      "createdAt": "2026-01-21T14:28:13.025Z",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "changeType": "REMOVE",
+      "componentId": "ABB-MOD-041",
+      "componentType": "abb",
+      "description": "Remove Speech-to-text service"
+    },
+    {
+      "id": "5416242d-b9cf-4803-abeb-2529ab5965c9",
+      "createdAt": "2026-01-21T14:56:46.002Z",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "changeType": "REMOVE",
+      "componentId": "DC-GOV-002",
+      "componentType": "dc",
+      "description": "Remove Metadata/catalog & lineage"
+    },
+    {
+      "id": "f1d7cd64-e8cf-4098-a5c7-024580a3bcae",
+      "createdAt": "2026-01-21T14:56:49.831Z",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "changeType": "REMOVE",
+      "componentId": "ABB-INT-051",
+      "componentType": "abb",
+      "description": "Remove Workflow orchestration"
+    },
+    {
+      "id": "239e8eff-21aa-4fa3-9f5c-0f00d236d76b",
+      "createdAt": "2026-01-21T15:12:54.097Z",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "changeType": "ADD",
+      "componentId": "CUSTOM-BC-1769008374054",
+      "componentType": "bc",
+      "description": "Create new: xxxxxxxxxxxxxxxxx"
+    },
+    {
+      "id": "2d6576ff-34b5-4453-9f45-3e20b7962b6a",
+      "createdAt": "2026-01-21T17:33:51.637Z",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "changeType": "ADD",
+      "componentId": "CUSTOM-BC-1769016831588",
+      "componentType": "bc",
+      "description": "Create new: Test Component",
+      "componentName": "Test Component",
+      "componentData": "{\"name\":\"Test Component\",\"description\":\"Testing adopt flow\",\"layer\":\"Business\",\"type\":\"bc\"}"
+    },
+    {
+      "id": "856fed94-2349-4332-b11b-1ce042a7dacb",
+      "createdAt": "2026-01-26T11:01:57.615Z",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "changeType": "ADD",
+      "componentId": "DC-DE-010",
+      "componentType": "dc",
+      "description": "Add Batch ingestion (ETL/ELT)",
+      "componentName": null,
+      "componentData": null
+    },
+    {
+      "id": "16605ffc-c88d-4854-a4b1-b3a8e3774624",
+      "createdAt": "2026-01-26T11:02:01.878Z",
+      "projectId": "0e20b62e-210f-42d7-bcea-97e0b49a94ad",
+      "changeType": "ADD_RELATION",
+      "componentId": "REL-BC-CUST-010-DC-DE-010",
+      "componentType": "relation",
+      "description": "Connect BC-CUST-010 to DC-DE-010",
+      "componentName": null,
+      "componentData": "{\"sourceId\":\"BC-CUST-010\",\"targetId\":\"DC-DE-010\"}"
+    }
+  ],
+  "projectVersions": [
+    {
+      "id": "449e7b8f-2d0b-4e1c-a32d-3202023ee20c",
+      "createdAt": "2026-01-26T16:23:11.647Z",
+      "projectId": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "description": "Archived before adopting target - 1/26/2026, 4:23:11 PM",
+      "snapshots": "[{\"componentId\":\"CUSTOM-BC-1769444510748\",\"componentType\":\"bc\",\"notes\":\"Adopted from target state\"},{\"componentId\":\"DC-DE-010\",\"componentType\":\"dc\",\"notes\":\"Adopted from target state\"},{\"componentId\":\"SBB-GCP-007\",\"componentType\":\"sbb\",\"notes\":\"Adopted from target state\"},{\"componentId\":\"ABB-DATA-008\",\"componentType\":\"abb\",\"notes\":\"Adopted from target state\"}]"
+    }
+  ],
+  "activityLogs": [
+    {
+      "id": "29f42c0a-5cf5-49ca-a5b5-859c6bab994f",
+      "timestamp": "2026-01-26T12:21:06.448Z",
+      "userId": "admin-id",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User admin logged out"
+    },
+    {
+      "id": "5cb00534-d784-432b-9a05-6cc12e19ace4",
+      "timestamp": "2026-01-26T12:21:10.254Z",
+      "userId": "ff29604b-4b8a-446d-b712-34aeafcf8564",
+      "action": "LOGIN",
+      "resource": "System",
+      "details": "User demo logged in"
+    },
+    {
+      "id": "41a8fd6b-d469-4415-b8ae-5fc9b7208d23",
+      "timestamp": "2026-01-26T12:21:18.590Z",
+      "userId": "ff29604b-4b8a-446d-b712-34aeafcf8564",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User demo logged out"
+    },
+    {
+      "id": "739b2abc-34b9-4388-a8a3-c305b35f49f7",
+      "timestamp": "2026-01-26T16:21:37.424Z",
+      "userId": "admin-id",
+      "action": "CREATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Created project: xxx"
+    },
+    {
+      "id": "622a9b40-d354-4dac-aef0-e58bc1cdaf0f",
+      "timestamp": "2026-01-26T16:21:50.790Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Create new: xxxxx (ADD)"
+    },
+    {
+      "id": "810c3804-25cf-4652-bbf8-a6eb2ce3b818",
+      "timestamp": "2026-01-26T16:22:15.203Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Add Batch ingestion (ETL/ELT) (ADD)"
+    },
+    {
+      "id": "52181bd5-e0de-4b3b-bed5-51884df5a302",
+      "timestamp": "2026-01-26T16:22:15.241Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Add Dataplex (Related) (ADD)"
+    },
+    {
+      "id": "175f8692-6f62-44e6-9a36-54f59449b05b",
+      "timestamp": "2026-01-26T16:22:15.272Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Add Data quality & observability (Related) (ADD)"
+    },
+    {
+      "id": "097636df-86fe-483f-b681-1e3060372535",
+      "timestamp": "2026-01-26T16:22:15.306Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Connect BC-PLAT-090 to DC-DE-010 (ADD_RELATION)"
+    },
+    {
+      "id": "b3c0b5e6-cb3b-4bcc-bcfd-7d01ebb9d398",
+      "timestamp": "2026-01-26T16:22:15.341Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Connect BC-PLAT-090 to DC-DE-010 (ADD_RELATION)"
+    },
+    {
+      "id": "57a4704c-3c40-4abc-aff9-08edf8551355",
+      "timestamp": "2026-01-26T16:22:23.700Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Connect CUSTOM-BC-1769444510748 to DC-DE-010 (ADD_RELATION)"
+    },
+    {
+      "id": "c91393d4-fff9-4663-b12d-dc98d174bbf5",
+      "timestamp": "2026-01-26T16:22:28.760Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Connect DC-DE-010 to SBB-GCP-007 (ADD_RELATION)"
+    },
+    {
+      "id": "430d9cfd-c1a2-4671-8c3a-438a7d7a23ea",
+      "timestamp": "2026-01-26T16:22:32.442Z",
+      "userId": "admin-id",
+      "action": "UPDATE_PROJECT",
+      "resource": "8c5d3c53-7238-4ff7-8187-e6a6f043fe06",
+      "details": "Connect SBB-GCP-007 to ABB-DATA-008 (ADD_RELATION)"
+    },
+    {
+      "id": "5243b946-effd-4afa-a509-e5f1b1f28c77",
+      "timestamp": "2026-01-26T16:24:36.117Z",
+      "userId": "admin-id",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User admin logged out"
+    },
+    {
+      "id": "ab7983e8-73fb-47fb-aaeb-949a51435e09",
+      "timestamp": "2026-01-26T16:24:40.989Z",
+      "userId": "ff29604b-4b8a-446d-b712-34aeafcf8564",
+      "action": "LOGIN",
+      "resource": "System",
+      "details": "User demo logged in"
+    },
+    {
+      "id": "7c409a24-0660-48b8-9fb3-382a91256d37",
+      "timestamp": "2026-01-26T16:25:19.364Z",
+      "userId": "ff29604b-4b8a-446d-b712-34aeafcf8564",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User demo logged out"
+    },
+    {
+      "id": "267c3525-00b2-4d6c-86a7-77330a9aca0c",
+      "timestamp": "2026-01-27T12:46:06.470Z",
+      "userId": "admin-id",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User admin logged out"
+    },
+    {
+      "id": "a9517e28-f22a-438c-812c-ac94d3f55904",
+      "timestamp": "2026-01-27T12:58:15.781Z",
+      "userId": "admin-id",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User admin logged out"
+    },
+    {
+      "id": "20033fee-3c85-4a4c-aaf6-e6c4f2e753d9",
+      "timestamp": "2026-01-27T14:38:34.081Z",
+      "userId": "admin-id",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User admin logged out"
+    },
+    {
+      "id": "80d47953-2401-4c02-87eb-e0400a764b3e",
+      "timestamp": "2026-01-27T14:44:30.773Z",
+      "userId": "admin-id",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User admin logged out"
+    },
+    {
+      "id": "b199dc3e-7223-459c-9b8a-0d8a559e4181",
+      "timestamp": "2026-01-27T14:47:16.579Z",
+      "userId": "admin-id",
+      "action": "LOGOUT",
+      "resource": "System",
+      "details": "User admin logged out"
+    }
+  ]
+}

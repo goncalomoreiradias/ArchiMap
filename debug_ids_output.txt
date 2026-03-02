@@ -1,0 +1,5 @@
+Existing 'Dados das empresas' ID: CUSTOM-DC-1770829841998
+Changes for CUSTOM-DC-1770829841998: 0
+Checking Relationships sources/targets:
+ - Relationship 8f40a04f-043d-4e1d-bbcd-72b6b5ac4e54 connects to CUSTOM-DC-1770829841998 via Source
+   Full Data: {"sourceId":"CUSTOM-DC-1770829841998","targetId":"CUSTOM-ABB-1770831495134"}
