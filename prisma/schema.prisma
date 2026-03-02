@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -126,8 +127,8 @@ model ProjectSnapshot {
   notes   String?
   addedAt DateTime @default(now())
 
-  projectAsIs   Project? @relation("AsIsSnapshot", fields: [projectId], references: [id], onDelete: Cascade)
-  projectTarget Project? @relation("TargetSnapshot", fields: [projectId], references: [id], onDelete: Cascade)
+  projectAsIs   Project? @relation("AsIsSnapshot", fields: [projectId], references: [id], onDelete: Cascade, map: "AsIsSnapshot_projectId_fkey")
+  projectTarget Project? @relation("TargetSnapshot", fields: [projectId], references: [id], onDelete: Cascade, map: "TargetSnapshot_projectId_fkey")
 
   @@index([projectId, snapshotType])
 }

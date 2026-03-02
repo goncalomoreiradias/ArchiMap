@@ -1,0 +1,26 @@
+Environment variables loaded from .env
+Prisma schema loaded from prisma\schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "db.aipsezbeuhnexcuwdgsm.supabase.co:5432"
+
+
+Error: Prisma schema validation - (validate wasm)
+Error code: P1012
+error: Error parsing attribute "@relation": The given constraint name `ProjectSnapshot_projectId_fkey` has to be unique in the following namespace: on model `ProjectSnapshot` for primary key, indexes, unique constraints and foreign keys. Please provide a different name using the `map` argument.
+  -->  prisma\schema.prisma:130
+   | 
+129 | 
+130 |   projectAsIs   Project? @relation("AsIsSnapshot", fields: [projectId], references: [id], onDelete: Cascade)
+131 |   projectTarget Project? @relation("TargetSnapshot", fields: [projectId], references: [id], onDelete: Cascade)
+   | 
+error: Error parsing attribute "@relation": The given constraint name `ProjectSnapshot_projectId_fkey` has to be unique in the following namespace: on model `ProjectSnapshot` for primary key, indexes, unique constraints and foreign keys. Please provide a different name using the `map` argument.
+  -->  prisma\schema.prisma:131
+   | 
+130 |   projectAsIs   Project? @relation("AsIsSnapshot", fields: [projectId], references: [id], onDelete: Cascade)
+131 |   projectTarget Project? @relation("TargetSnapshot", fields: [projectId], references: [id], onDelete: Cascade)
+132 | 
+   | 
+
+Validation Error Count: 2
+[Context: validate]
+
+Prisma CLI Version : 5.22.0

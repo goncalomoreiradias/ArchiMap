@@ -1,0 +1,28 @@
+
+! unknown or unexpected option: --preview-feature
+
+Push the state from your Prisma schema to your database
+
+Usage
+
+  $ prisma db push [options]
+
+Options
+
+           -h, --help   Display this help message
+             --schema   Custom path to your Prisma schema
+   --accept-data-loss   Ignore data loss warnings
+        --force-reset   Force a reset of the database before push 
+      --skip-generate   Skip triggering generators (e.g. Prisma Client)
+
+Examples
+
+  Push the Prisma schema state to the database
+  $ prisma db push
+
+  Specify a schema
+  $ prisma db push --schema=./schema.prisma
+
+  Ignore data loss warnings
+  $ prisma db push --accept-data-loss
+
