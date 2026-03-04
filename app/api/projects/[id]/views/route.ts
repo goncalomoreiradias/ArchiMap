@@ -34,7 +34,33 @@ export async function POST(
         const { viewType } = await request.json() as { viewType: ViewType };
         const projectId = resolvedParams.id;
 
-        // 1. Initialize Empty Catalog (Replacing file load)
+        // Get project with snapshots and changes FIRST
+        const project = await db.project.findUnique({
+            where: { id: projectId },
+            include: {
+                asIsSnapshots: true,
+                targetSnapshots: true,
+                changes: true
+            }
+        });
+
+        if (!project) {
+            return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+        }
+
+        // Extract all involved component IDs (from snapshots and changes)
+        const involvedComponentIds = new Set<string>();
+        project.asIsSnapshots.forEach(s => involvedComponentIds.add(s.catalogComponentId));
+        project.changes.forEach(c => {
+            involvedComponentIds.add(c.componentId);
+            try {
+                const data = c.componentData ? JSON.parse(c.componentData) : null;
+                if (data?.sourceId) involvedComponentIds.add(data.sourceId);
+                if (data?.targetId) involvedComponentIds.add(data.targetId);
+            } catch (e) { }
+        });
+
+        // 1. Initialize Empty Catalog
         const catalog: CatalogData = {
             businessCapabilities: [],
             dataCapabilities: [],
@@ -44,9 +70,19 @@ export async function POST(
             relationships: []
         };
 
-        // 2. Fetch All DB Data
-        const dbComponents = await db.component.findMany();
-        const dbRelationships = await db.relationship.findMany();
+        // 2. Fetch ONLY Involved DB Data
+        const dbComponents = await db.component.findMany({
+            where: {
+                id: { in: Array.from(involvedComponentIds) }
+            }
+        });
+
+        const dbRelationships = await db.relationship.findMany({
+            where: {
+                sourceComponentId: { in: Array.from(involvedComponentIds) },
+                targetComponentId: { in: Array.from(involvedComponentIds) }
+            }
+        });
 
         // 3. Populate Catalog from DB
         dbComponents.forEach((comp: any) => {
@@ -55,15 +91,12 @@ export async function POST(
                 id: comp.id,
                 name: comp.name,
                 description: comp.description,
-                layer: comp.layer, // Ensure actual DB layer survives parsing
-                // Add specific fields if needed
+                layer: comp.layer,
                 domainArea: comp.layer === 'Business' ? 'Custom' : undefined,
                 bcL1: comp.layer === 'Business' ? comp.name : undefined,
                 pattern: comp.layer === 'Data' ? 'Custom Pattern' : undefined,
                 domain: comp.layer === 'Application' ? 'Custom Domain' : undefined,
                 vendor: comp.layer === 'Technology' ? 'Custom Vendor' : undefined,
-
-                // New Fields
                 version: comp.version,
                 lifecycle: comp.lifecycle,
                 strategicValue: comp.strategicValue,
@@ -76,7 +109,6 @@ export async function POST(
                 validTo: comp.validTo
             };
 
-            // Parse metadata to extract specific fields if they exist (backward compatibility)
             if (comp.metadata) {
                 try {
                     const meta = typeof comp.metadata === 'string' ? JSON.parse(comp.metadata) : comp.metadata;
@@ -91,23 +123,15 @@ export async function POST(
             else if (comp.layer === 'Technology' || type === 'sbb') catalog.sbbs.push(compData);
         });
 
-        // Populate Relationships from DB
         dbRelationships.forEach((rel: any) => {
             const sourceId = rel.sourceComponentId;
             const targetId = rel.targetComponentId;
-
-            // Simple mapping - the legacy format required specific keys but the logic below 
-            // mostly uses sourceId/targetId mapping or specific fields.
-            // Let's try to infer the types to populate the specific keys 
-            // (businessCapabilityId, etc) as expected by the logic below.
 
             const source = dbComponents.find(c => c.id === sourceId);
             const target = dbComponents.find(c => c.id === targetId);
 
             if (source && target) {
-                const newRel: any = { type: rel.type }; // Keep type if useful
-
-                // Map based on types to satisfy the interface and downstream logic
+                const newRel: any = { type: rel.type };
                 if (source.layer === 'Business') newRel.businessCapabilityId = sourceId;
                 if (source.layer === 'BIAN') newRel.bianId = sourceId;
                 if (source.layer === 'Data') newRel.dataCapabilityId = sourceId;
@@ -120,7 +144,6 @@ export async function POST(
                 if (target.layer === 'Application') newRel.abbId = targetId;
                 if (target.layer === 'Technology') newRel.sbbId = targetId;
 
-                // Also add standard source/target for generic usage
                 newRel.sourceId = sourceId;
                 newRel.targetId = targetId;
 
@@ -129,19 +152,6 @@ export async function POST(
         });
 
 
-        // Get project with snapshots and changes
-        const project = await db.project.findUnique({
-            where: { id: projectId },
-            include: {
-                asIsSnapshots: true,
-                targetSnapshots: true,
-                changes: true
-            }
-        });
-
-        if (!project) {
-            return NextResponse.json({ error: 'Project not found' }, { status: 404 });
-        }
 
         // Get conflicts if in Gap view
         let conflictMap = new Set<string>();

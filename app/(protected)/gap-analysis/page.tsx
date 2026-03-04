@@ -25,9 +25,6 @@ export default async function GapAnalysisPage() {
     // Active Roadmaps: Projects that have completed their design phase and have gaps to analyze
     const activeProjects = enrichedProjects.filter(p => p.status === "Completed" && p._count.changes > 0)
 
-    // History: Completed projects with an end date
-    const completedProjects = enrichedProjects.filter(p => p.status === "Completed" && p.endDate !== null)
-
     // Sort active by recently updated
     activeProjects.sort((a, b) => {
         const dateA = new Date(a.updatedAt || 0).getTime()
@@ -35,8 +32,32 @@ export default async function GapAnalysisPage() {
         return dateB - dateA
     })
 
+    // History: Fetch actual completed Roadmaps (Gaps) with target dates defined
+    const allGaps = await db.gap.findMany({
+        where: {
+            status: "Completed",
+            endDate: { not: null }
+        },
+        include: {
+            project: { select: { name: true } },
+            changes: { select: { id: true } }
+        }
+    })
+
+    // Map gaps to the TimelineProject format so the timeline plots Target Dates of Roadmaps
+    const completedRoadmaps = allGaps
+        .filter((g: any) => g.changes.length > 0)
+        .map((g: any) => ({
+            id: g.projectId, // Route to the project board
+            name: `${g.title} - ${g.project.name}`, // Clarify it's a roadmap inside a project
+            description: g.description,
+            status: g.status,
+            endDate: g.endDate, // The actual Roadmap Target Date!
+            _count: { changes: g.changes.length }
+        }))
+
     // Sort completed by end date chronologically
-    completedProjects.sort((a, b) => {
+    completedRoadmaps.sort((a, b) => {
         const dateA = new Date(a.endDate || 0).getTime()
         const dateB = new Date(b.endDate || 0).getTime()
         return dateA - dateB
@@ -53,7 +74,7 @@ export default async function GapAnalysisPage() {
                 </div>
             </div>
 
-            <GapAnalysisTabs activeProjects={activeProjects} completedProjects={completedProjects} />
+            <GapAnalysisTabs activeProjects={activeProjects} completedProjects={completedRoadmaps} />
         </div>
     )
 }

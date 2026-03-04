@@ -7,7 +7,7 @@ import { Layers, History } from "lucide-react"
 
 export function GapAnalysisTabs({ activeProjects, completedProjects }: { activeProjects: any[], completedProjects: any[] }) {
     return (
-        <Tabs defaultValue="active" className="w-full">
+        <Tabs defaultValue="active" className="w-full" id="gap-analysis-tabs">
             <div className="flex justify-between items-center mb-8">
                 <TabsList className="bg-slate-100/50 p-1">
                     <TabsTrigger value="active" className="flex items-center gap-2 data-[state=active]:bg-white data-[state=active]:shadow-sm">

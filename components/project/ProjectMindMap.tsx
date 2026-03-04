@@ -18,7 +18,7 @@ import '@xyflow/react/dist/style.css';
 import { ArchNode } from '../mindmap/ArchNode';
 import { DeletableEdge } from '../mindmap/DeletableEdge';
 import { toPng, toSvg } from 'html-to-image';
-import { Trash2, Undo, X, Download, Image as ImageIcon, FileImage, Network } from 'lucide-react';
+import { Trash2, Undo, X, Download, Image as ImageIcon, FileImage, Network, Loader2 } from 'lucide-react';
 
 
 // Register custom node types
@@ -323,6 +323,18 @@ export default function ProjectMindMap({
                 }
             }}
         >
+            {/* Loading Overlay */}
+            {loading && (
+                <div className="absolute inset-0 z-50 flex items-center justify-center bg-slate-50/70 backdrop-blur-[2px] transition-all">
+                    <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+                        <div className="bg-white px-4 py-2 rounded-full shadow-md border border-gray-100 font-medium text-sm text-gray-700 animate-pulse">
+                            Loading View...
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <ReactFlow
                 nodes={visibleNodes}
                 edges={edges}

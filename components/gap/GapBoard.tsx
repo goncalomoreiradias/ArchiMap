@@ -297,10 +297,10 @@ function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, allGaps, onA
                             <GapStatusBadge status={status} />
                             {canEdit && (
                                 <Select value={status} onValueChange={setStatus}>
-                                    <SelectTrigger className="w-[130px] h-8 text-xs border-dashed">
+                                    <SelectTrigger className="w-[130px] h-8 text-xs border-dashed" id="gap-status-select-trigger">
                                         <SelectValue placeholder="Update Status" />
                                     </SelectTrigger>
-                                    <SelectContent>
+                                    <SelectContent id="gap-status-select-content">
                                         <SelectItem value="Identified">Identified</SelectItem>
                                         <SelectItem value="In Progress">In Progress</SelectItem>
                                         <SelectItem value="Completed">Completed</SelectItem>
@@ -334,7 +334,7 @@ function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, allGaps, onA
 
             {/* Tabs */}
             <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/50 min-h-0">
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full" id="gap-detail-tabs">
                     <div className="px-6 border-b bg-white sticky top-0 z-10 shrink-0">
                         <TabsList className="bg-transparent h-12 w-full justify-start rounded-none p-0 gap-6">
                             <TabsTrigger value="visual" className="data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary data-[state=active]:shadow-none rounded-none px-2 py-3 bg-transparent font-medium border-b-2 border-transparent transition-all">
