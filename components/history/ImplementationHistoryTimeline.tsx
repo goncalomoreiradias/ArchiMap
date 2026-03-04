@@ -58,6 +58,12 @@ export function ImplementationHistoryTimeline({ projects }: { projects: Timeline
         const start = new Date(projects[0].endDate)
         const end = new Date(projects[projects.length - 1].endDate)
 
+        // Force to the 1st of the month to represent true calendar intervals
+        start.setDate(1)
+        start.setHours(0, 0, 0, 0)
+        end.setDate(1)
+        end.setHours(23, 59, 59, 999)
+
         // Add some padding months
         start.setMonth(start.getMonth() - 1)
         end.setMonth(end.getMonth() + 2)
@@ -119,10 +125,12 @@ export function ImplementationHistoryTimeline({ projects }: { projects: Timeline
                 <div className="absolute inset-x-20 inset-y-0 text-white">
                     {projects.map((project, index) => {
                         const isTop = index % 2 === 0
-                        // Distribute exactly chronologically across the timespan of uniqueMonths
+
                         const tStart = uniqueMonths[0].getTime()
                         const tEnd = uniqueMonths[uniqueMonths.length - 1].getTime()
                         const pDate = new Date(project.endDate).getTime()
+
+                        // Calculate percentage of absolute position between start and end date of the ENTIRE timeline
                         const absoluteTimespan = tEnd - tStart
                         let leftPercentage = 50
 
@@ -130,10 +138,13 @@ export function ImplementationHistoryTimeline({ projects }: { projects: Timeline
                             leftPercentage = ((pDate - tStart) / absoluteTimespan) * 100
                         }
 
+                        // Shift project card by half its width so center aligns with percentage
+                        const cardWidthOffset = "translate-x-[-50%]"
+
                         return (
                             <motion.div
                                 key={project.id}
-                                className="absolute flex flex-col items-center"
+                                className={`absolute flex flex-col items-center ${cardWidthOffset}`}
                                 style={{
                                     left: `${leftPercentage}%`,
                                     [isTop ? 'bottom' : 'top']: 'calc(50% + 12px)', // offset slightly to give more room for the dot
@@ -149,7 +160,7 @@ export function ImplementationHistoryTimeline({ projects }: { projects: Timeline
                                 />
 
                                 {/* Connection Dot */}
-                                <div className="absolute w-3 h-3 rounded-full bg-indigo-500 border-2 border-white shadow-md z-0" style={{ [isTop ? 'bottom' : 'top']: '-6px' }} />
+                                <div className="absolute w-3 h-3 rounded-full bg-indigo-500 border-2 border-white shadow-md z-0" style={{ [isTop ? 'bottom' : 'top']: '-6px', left: "50%", transform: "translateX(-50%)" }} />
 
                                 {/* Project Card */}
                                 <a

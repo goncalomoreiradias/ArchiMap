@@ -32,11 +32,13 @@ export default async function GapAnalysisPage() {
         return dateB - dateA
     })
 
-    // History: Fetch actual completed Roadmaps (Gaps) with target dates defined
-    const allGaps = await db.gap.findMany({
+    // History: Fetch actual completed roadmaps (Gaps) from completed projects that have target dates defined
+    const roadmapsQuery = await db.gap.findMany({
         where: {
-            status: "Completed",
-            endDate: { not: null }
+            endDate: { not: null },
+            project: {
+                status: "Completed"
+            }
         },
         include: {
             project: { select: { name: true } },
@@ -44,15 +46,14 @@ export default async function GapAnalysisPage() {
         }
     })
 
-    // Map gaps to the TimelineProject format so the timeline plots Target Dates of Roadmaps
-    const completedRoadmaps = allGaps
+    const completedRoadmaps = roadmapsQuery
         .filter((g: any) => g.changes.length > 0)
         .map((g: any) => ({
             id: g.projectId, // Route to the project board
             name: `${g.title} - ${g.project.name}`, // Clarify it's a roadmap inside a project
             description: g.description,
-            status: g.status,
-            endDate: g.endDate, // The actual Roadmap Target Date!
+            status: "Completed",
+            endDate: g.endDate, // The actual user-defined target date
             _count: { changes: g.changes.length }
         }))
 
