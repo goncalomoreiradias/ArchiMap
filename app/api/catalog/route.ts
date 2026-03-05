@@ -3,13 +3,18 @@ import { db } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 import { getComponentLifecycleUpdates } from '@/lib/roadmap';
+import { requireAuth } from '@/lib/auth-utils';
 
 export async function GET() {
     try {
-        // 1. Fetch DB Components & Relationships
+        // Get organizationId from session for tenant isolation
+        const authResult = await requireAuth();
+        const orgFilter = authResult.organizationId ? { organizationId: authResult.organizationId } : {};
+
+        // 1. Fetch DB Components & Relationships scoped to organization
         const [components, relationships] = await Promise.all([
-            db.component.findMany(),
-            db.relationship.findMany()
+            db.component.findMany({ where: orgFilter }),
+            db.relationship.findMany({ where: orgFilter })
         ]);
 
         // 2. Initialize Catalog Structure

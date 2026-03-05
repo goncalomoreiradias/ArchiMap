@@ -1,7 +1,7 @@
 
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { verifyToken } from '@/lib/jwt';
+import { requireEditor } from '@/lib/auth-utils';
 
 export async function PUT(
     request: Request,
@@ -11,15 +11,8 @@ export async function PUT(
         const { gapId } = await params;
 
         // Auth check
-        const cookieHeader = request.headers.get('cookie') || '';
-        const tokenMatch = cookieHeader.match(/token=([^;]+)/);
-        const tokenStr = tokenMatch ? tokenMatch[1] : null;
-
-        if (!tokenStr) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        const decoded = verifyToken(tokenStr);
-        if (!decoded || (typeof decoded !== 'string' && decoded.role === 'Viewer')) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
+        const authResult = await requireEditor();
+        if (authResult.error) return NextResponse.json({ error: authResult.error }, { status: authResult.status });
 
         const body = await request.json();
         const { changeIds, action } = body; // action: 'assign' | 'unassign'

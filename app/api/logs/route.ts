@@ -3,15 +3,16 @@ import { db } from '@/lib/db';
 
 export async function GET() {
     try {
-        const logs = await db.projectChange.findMany({
+        const logs = await db.activityLog.findMany({
             take: 10,
             orderBy: {
-                createdAt: 'desc'
+                timestamp: 'desc'
             },
             include: {
-                project: {
+                user: {
                     select: {
-                        name: true
+                        name: true,
+                        username: true
                     }
                 }
             }
@@ -20,12 +21,12 @@ export async function GET() {
         // Format logs for display
         const formattedLogs = logs.map(log => ({
             id: log.id,
-            user: "System User", // Placeholder until ActivityLog with User relation is fully used
-            action: log.operation,
-            target: log.componentName || log.componentId,
-            project: log.project.name,
-            timestamp: log.createdAt,
-            details: log.description
+            user: log.user?.name || log.user?.username || "Unknown Object",
+            action: log.action,
+            target: log.resource,
+            project: log.resource, // Simplification or link to resource names
+            timestamp: log.timestamp,
+            details: log.details
         }));
 
         return NextResponse.json(formattedLogs);

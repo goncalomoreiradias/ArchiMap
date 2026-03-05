@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { logActivity } from '@/lib/logger';
-import { verifyToken } from '@/lib/jwt';
+import { logActivity } from '@/lib/audit-logger';
+import { requireEditor } from '@/lib/auth-utils';
 
 export async function GET(
     request: NextRequest,
@@ -32,9 +32,9 @@ export async function POST(
         const resolvedParams = await context.params;
         const { operation, componentId, componentType, description, componentName, componentData } = await request.json();
 
-        const token = request.cookies.get("token")?.value;
-        const user = token ? verifyToken(token) as any : null;
-        const userId = user?.id || 'anonymous';
+        const authResult = await requireEditor();
+        if (authResult.error) return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+        const userId = (authResult.session.user as any).id;
 
         const change = await db.projectChange.create({
             data: {
@@ -50,9 +50,7 @@ export async function POST(
         });
 
         // Audit Log
-        if (userId !== 'anonymous') {
-            await logActivity(userId, "UPDATE_PROJECT", resolvedParams.id, `${description} (${operation})`);
-        }
+        await logActivity(userId, "UPDATE_PROJECT", resolvedParams.id, `${description} (${operation})`);
 
         return NextResponse.json(change);
     } catch (error) {
@@ -80,17 +78,15 @@ export async function DELETE(
             );
         }
 
-        const token = request.cookies.get("token")?.value;
-        const user = token ? verifyToken(token) as any : null;
-        const userId = user?.id || 'anonymous';
+        const authResult = await requireEditor();
+        if (authResult.error) return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+        const userId = (authResult.session.user as any).id;
 
         await db.projectChange.delete({
             where: { id: changeId }
         });
 
-        if (userId !== 'anonymous') {
-            await logActivity(userId, "UPDATE_PROJECT", resolvedParams.id, `Reverted change ${changeId}`);
-        }
+        await logActivity(userId, "UPDATE_PROJECT", resolvedParams.id, `Reverted change ${changeId}`);
 
         return NextResponse.json({ success: true });
     } catch (error) {

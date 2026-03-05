@@ -1,6 +1,6 @@
 import { AppShell } from "@/components/layout/AppShell";
-import { cookies } from "next/headers";
-import { verifyToken } from "@/lib/jwt";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
 export default async function ProtectedLayout({
@@ -8,21 +8,16 @@ export default async function ProtectedLayout({
 }: {
     children: React.ReactNode;
 }) {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token")?.value;
+    const session = await getServerSession(authOptions);
 
-    if (!token) {
+    if (!session || !session.user) {
         redirect("/login");
     }
 
-    const user = verifyToken(token) as any;
-
-    if (!user) {
-        redirect("/login");
-    }
+    const role = (session.user as any).role || 'Viewer';
 
     return (
-        <AppShell userRole={user.role}>
+        <AppShell userRole={role}>
             {children}
         </AppShell>
     );

@@ -1,11 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { logActivity } from '@/lib/logger';
-import { verifyToken } from '@/lib/jwt';
+import { logActivity } from '@/lib/audit-logger';
+import { requireEditor, requireAuth } from '@/lib/auth-utils';
 
 export async function GET() {
     try {
-        const projects = await db.project.findMany();
+        const authResult = await requireAuth();
+        const orgFilter = authResult.organizationId ? { organizationId: authResult.organizationId } : {};
+
+        const projects = await db.project.findMany({
+            where: orgFilter
+        });
         return NextResponse.json(projects);
     } catch (error) {
         console.error('Error fetching projects:', error);
@@ -21,9 +26,9 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Project name is required' }, { status: 400 });
         }
 
-        const token = request.cookies.get("token")?.value;
-        const user = token ? verifyToken(token) as any : null;
-        const userId = user?.id || 'anonymous'; // Should ideally require auth
+        const authResult = await requireEditor();
+        if (authResult.error) return NextResponse.json({ error: authResult.error }, { status: authResult.status });
+        const userId = (authResult.session.user as any).id;
 
         const project = await db.project.create({
             data: {
@@ -31,7 +36,8 @@ export async function POST(request: NextRequest) {
                 description: description || '',
                 status: status || 'Planned',
                 startDate: new Date(),
-                endDate: null
+                endDate: null,
+                organizationId: authResult.organizationId || null
             }
         });
 
@@ -41,9 +47,7 @@ export async function POST(request: NextRequest) {
         // The old logic that auto-snapshots ALL 'As-Is' components was incorrect -
         // it caused all DB components to appear in new projects.
 
-        if (userId !== 'anonymous') {
-            await logActivity(userId, "CREATE_PROJECT", project.id, `Created project: ${name}`);
-        }
+        await logActivity(userId, "CREATE_PROJECT", project.id, `Created project: ${name}`);
 
         return NextResponse.json(project);
     } catch (error) {

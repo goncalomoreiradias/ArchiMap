@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,17 +27,17 @@ export default function LoginPage() {
             // Artificial delay for effect
             await new Promise(resolve => setTimeout(resolve, 800))
 
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                body: JSON.stringify({ username, password }),
-                headers: { "Content-Type": "application/json" },
-            })
+            const res = await signIn("credentials", {
+                redirect: false,
+                username,
+                password
+            });
 
-            if (res.ok) {
+            if (res?.ok) {
                 router.push("/dashboard")
+                router.refresh() // Refresh to ensure session state updates
             } else {
-                const data = await res.json()
-                setError(data.error || "Login failed")
+                setError(res?.error || "Invalid username or password")
                 setIsLoading(false)
             }
         } catch (err) {

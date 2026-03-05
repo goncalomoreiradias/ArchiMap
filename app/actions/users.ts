@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db"
 import { revalidatePath } from "next/cache"
-import { hashPassword } from "@/lib/auth"
+import bcryptjs from "bcryptjs"
 
 export type UserResult = {
     success: boolean
@@ -28,7 +28,7 @@ export async function createUser(data: any): Promise<UserResult> {
         // Hash password
         let passwordHash = ""
         try {
-            passwordHash = await hashPassword(data.password || "123456")
+            passwordHash = await bcryptjs.hash(data.password || "123456", 10)
         } catch (e) {
             console.error("Hashing failed", e)
             passwordHash = "HASH_FAILED"
@@ -75,7 +75,7 @@ export async function updateUser(userId: string, data: any): Promise<UserResult>
 
         if (data.password) {
             try {
-                updateData.passwordHash = await hashPassword(data.password)
+                updateData.passwordHash = await bcryptjs.hash(data.password, 10)
             } catch (e) {
                 console.error("Hashing failed", e)
             }
