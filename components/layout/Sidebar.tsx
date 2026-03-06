@@ -21,6 +21,7 @@ import {
 import { useUIStore } from "@/store/useUIStore"
 import { motion, AnimatePresence } from "framer-motion"
 import { logout } from "@/app/actions/auth"
+import { OrganizationSwitcher } from "./OrganizationSwitcher"
 
 const routes = [
   {
@@ -64,6 +65,12 @@ const routes = [
     icon: Upload,
     href: "/import",
     color: "text-orange-500",
+  },
+  {
+    label: "Settings",
+    icon: Settings,
+    href: "/settings/developer",
+    color: "text-slate-400",
   },
 ]
 
@@ -113,6 +120,11 @@ export function Sidebar({ userRole }: { userRole?: string }) {
             </motion.div>
           )}
         </div>
+      </div>
+
+      {/* Organization Switcher */}
+      <div className="px-3 mb-6">
+        <OrganizationSwitcher />
       </div>
 
       {/* Routes */}
