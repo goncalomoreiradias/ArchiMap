@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { logActivity } from '@/lib/audit-logger';
-import { requireEditor, requireAuth } from '@/lib/auth-utils';
+import { requireEditor, getOrgScope } from '@/lib/auth-utils';
 
 export async function GET() {
     try {
-        const authResult = await requireAuth();
-        const orgFilter = authResult.organizationId ? { organizationId: authResult.organizationId } : {};
+        const orgFilter = await getOrgScope();
 
         const projects = await db.project.findMany({
             where: orgFilter

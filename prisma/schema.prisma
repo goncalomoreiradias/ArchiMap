@@ -250,6 +250,12 @@ model Gap {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  // Approval Workflow
+  approvalStatus  String   @default("DRAFT") // DRAFT, PENDING_REVIEW, APPROVED, REJECTED
+  approvedById    String?
+  approvedAt      DateTime?
+  rejectionReason String?
+
   organizationId String?
   organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 

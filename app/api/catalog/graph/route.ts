@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { Node, Edge } from '@xyflow/react';
 import { getComponentLifecycleUpdates } from '@/lib/roadmap';
+import { getOrgScope } from '@/lib/auth-utils';
 
 type ComponentType = 'bc' | 'dc' | 'abb' | 'sbb';
 type Layer = 'Business' | 'Data' | 'Application' | 'Technology';
@@ -60,8 +61,9 @@ export async function POST(request: NextRequest) {
         }));
         console.log(`Debug Graph: futureEdges prepared: ${futureEdges.length}`);
 
-        // Fetch all relationships once for performance (in-memory filtering is faster for this dataset size)
-        const existingRelationships = await db.relationship.findMany();
+        // Fetch all relationships once for performance, scoped to organization
+        const orgFilter = await getOrgScope();
+        const existingRelationships = await db.relationship.findMany({ where: orgFilter });
 
         // Combine for traversal
         const allRelationships = [...existingRelationships, ...futureEdges];
@@ -135,7 +137,8 @@ export async function POST(request: NextRequest) {
 
         const components = await db.component.findMany({
             where: {
-                id: { in: Array.from(relevantComponentIds) }
+                id: { in: Array.from(relevantComponentIds) },
+                ...orgFilter
             }
         });
 

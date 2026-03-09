@@ -41,18 +41,28 @@ export const authOptions: NextAuthOptions = {
                     return { id: "admin-id", name: "Admin User", role: "Admin" } as any;
                 }
 
-                const user = await db.user.findUnique({
-                    where: { username: credentials.username }
+                const user = await db.user.findFirst({
+                    where: {
+                        OR: [
+                            { username: credentials.username },
+                            { email: credentials.username }
+                        ]
+                    }
                 });
 
                 if (!user || !user.passwordHash) {
-                    throw new Error("User not found");
+                    throw new Error("Invalid credentials");
+                }
+
+                // Check if user is suspended/inactive
+                if (user.status && user.status !== "Active") {
+                    throw new Error("Account is suspended. Contact your administrator.");
                 }
 
                 const isValid = await bcrypt.compare(credentials.password, user.passwordHash);
 
                 if (!isValid) {
-                    throw new Error("Invalid password");
+                    throw new Error("Invalid credentials");
                 }
 
                 return {

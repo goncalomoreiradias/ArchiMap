@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 
 import { getComponentLifecycleUpdates } from '@/lib/roadmap';
+import { getOrgScope } from '@/lib/auth-utils';
 
 export async function GET() {
     try {
-        const relationships = await db.relationship.findMany();
+        const orgFilter = await getOrgScope();
+        const relationships = await db.relationship.findMany({ where: orgFilter });
 
         // Fetch future relationships
         const { createdEdges } = await getComponentLifecycleUpdates();

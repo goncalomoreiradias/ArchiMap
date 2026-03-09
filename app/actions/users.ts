@@ -43,6 +43,17 @@ export async function createUser(data: any): Promise<UserResult> {
             }
         })
 
+        // Create organization membership if ID is provided
+        if (data.organizationId) {
+            await db.organizationMember.create({
+                data: {
+                    userId: newUser.id,
+                    organizationId: data.organizationId,
+                    role: data.role === 'Admin' ? 'ADMIN' : 'MEMBER'
+                }
+            })
+        }
+
         revalidatePath("/users")
         return { success: true, user: newUser }
     } catch (error) {
@@ -85,6 +96,42 @@ export async function updateUser(userId: string, data: any): Promise<UserResult>
             where: { id: userId },
             data: updateData
         })
+
+        // Update organization membership
+        if (data.organizationId) {
+            // Upsert: Try to update first, if not exists, create
+            const existingMember = await db.organizationMember.findFirst({
+                where: { userId }
+            })
+
+            if (existingMember) {
+                if (existingMember.organizationId !== data.organizationId) {
+                    await db.organizationMember.update({
+                        where: { id: existingMember.id },
+                        data: {
+                            organizationId: data.organizationId,
+                            role: data.role === 'Admin' ? 'ADMIN' : 'MEMBER'
+                        }
+                    })
+                } else {
+                    // Just update the role if org is same
+                    await db.organizationMember.update({
+                        where: { id: existingMember.id },
+                        data: {
+                            role: data.role === 'Admin' ? 'ADMIN' : 'MEMBER'
+                        }
+                    })
+                }
+            } else {
+                await db.organizationMember.create({
+                    data: {
+                        userId,
+                        organizationId: data.organizationId,
+                        role: data.role === 'Admin' ? 'ADMIN' : 'MEMBER'
+                    }
+                })
+            }
+        }
 
         revalidatePath("/users")
         return { success: true, user: updatedUser }

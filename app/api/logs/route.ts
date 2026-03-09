@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { getOrgScope } from '@/lib/auth-utils';
 
 export async function GET() {
     try {
+        const orgFilter = await getOrgScope();
         const logs = await db.activityLog.findMany({
+            where: orgFilter,
             take: 10,
             orderBy: {
                 timestamp: 'desc'

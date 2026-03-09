@@ -3,13 +3,12 @@ import { db } from '@/lib/db';
 import fs from 'fs';
 import path from 'path';
 import { getComponentLifecycleUpdates } from '@/lib/roadmap';
-import { requireAuth } from '@/lib/auth-utils';
+import { getOrgScope } from '@/lib/auth-utils';
 
 export async function GET() {
     try {
         // Get organizationId from session for tenant isolation
-        const authResult = await requireAuth();
-        const orgFilter = authResult.organizationId ? { organizationId: authResult.organizationId } : {};
+        const orgFilter = await getOrgScope();
 
         // 1. Fetch DB Components & Relationships scoped to organization
         const [components, relationships] = await Promise.all([

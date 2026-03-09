@@ -17,8 +17,37 @@ export async function requireAuth() {
     const user = session.user as any;
     return {
         session,
+        userId: user.id as string,
+        userRole: user.role as string,
         organizationId: user.organizationId as string | undefined
     };
+}
+
+/**
+ * Returns a Prisma `where` clause that scopes data to the current user's organization.
+ * - Super Admin (admin-id): returns {} (sees everything)
+ * - Org-scoped user: returns { organizationId: "<their-org-id>" }
+ * - User with no org: returns { organizationId: "__NONE__" } (sees nothing — safe default)
+ */
+export async function getOrgScope(): Promise<{ organizationId?: string }> {
+    const auth = await requireAuth();
+    if ('error' in auth) return { organizationId: "__NONE__" };
+
+    const user = (auth.session.user as any);
+
+    // Super Admin bypass — sees all organizations
+    if (user.id === "admin-id" || user.role === "Admin") {
+        // Check if this is the hardcoded super admin
+        if (user.id === "admin-id") return {};
+    }
+
+    // Normal users: strictly scope to their organization
+    if (auth.organizationId) {
+        return { organizationId: auth.organizationId };
+    }
+
+    // No organization — return impossible filter for safety
+    return { organizationId: "__NONE__" };
 }
 
 export async function requireRole(allowedRoles: Role[]) {

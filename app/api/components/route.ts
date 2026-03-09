@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { getComponentLifecycleUpdates } from '@/lib/roadmap';
 import { isValidComponentType } from '@/lib/taxonomy';
+import { getOrgScope, requireEditor } from '@/lib/auth-utils';
 
 export async function GET(req: Request) {
     try {
@@ -9,7 +10,8 @@ export async function GET(req: Request) {
         const layerFilter = searchParams.get('layer');
         const typeFilter = searchParams.get('type');
 
-        const filter: any = {};
+        const orgFilter = await getOrgScope();
+        const filter: any = { ...orgFilter };
         if (layerFilter) filter.layer = layerFilter;
         if (typeFilter) filter.type = typeFilter;
 
@@ -84,6 +86,7 @@ export async function POST(req: Request) {
         }
 
         const user = await db.user.findFirst();
+        const orgFilter = await getOrgScope();
 
         const component = await db.component.create({
             data: {
@@ -95,6 +98,7 @@ export async function POST(req: Request) {
                 owner,
                 criticality: criticality || 'Medium',
                 createdById: user?.id || 'admin-id',
+                organizationId: orgFilter.organizationId || null,
 
                 // New Fields
                 version,

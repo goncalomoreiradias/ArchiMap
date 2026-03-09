@@ -8,8 +8,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Trash2, User as UserIcon, Shield, Activity, Users, UserCheck, FileText, Clock, Edit } from "lucide-react"
+import { Plus, Trash2, User as UserIcon, Shield, Activity, Users, UserCheck, FileText, Clock, Edit, Building2, ChevronDown, ChevronUp } from "lucide-react"
 import { createUser, deleteUser, updateUser } from "@/app/actions/users"
+import { createOrganization, deleteOrganization } from "@/app/actions/organizations"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { LogExportDialog } from "./users/LogExportDialog"
@@ -21,6 +22,15 @@ type User = {
     role: string
     status?: string // Added status
     createdAt: string
+    organizationName?: string
+    organizationId?: string
+}
+
+type Organization = {
+    id: string
+    name: string
+    slug?: string
+    _count?: { members: number }
 }
 
 type ActivityLog = {
@@ -35,9 +45,10 @@ type ActivityLog = {
 type UsersViewProps = {
     users: User[]
     logs: ActivityLog[]
+    organizations?: Organization[]
 }
 
-export function UsersView({ users, logs }: UsersViewProps) {
+export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
     const [isAddOpen, setIsAddOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false) // Edit Modal State
     const [editingUser, setEditingUser] = useState<User | null>(null) // User being edited
@@ -45,12 +56,18 @@ export function UsersView({ users, logs }: UsersViewProps) {
     const [selectedUserLogs, setSelectedUserLogs] = useState<{ user: User, logs: ActivityLog[] } | null>(null)
     const router = useRouter()
 
+    // Organization management state
+    const [isOrgPanelOpen, setIsOrgPanelOpen] = useState(false)
+    const [newOrgName, setNewOrgName] = useState("")
+    const [newOrgSlug, setNewOrgSlug] = useState("")
+
     const [formData, setFormData] = useState({
         username: "",
         email: "",
         password: "",
         role: "Viewer",
-        status: "Active"
+        status: "Active",
+        organizationId: organizations[0]?.id || ""
     })
 
     // Edit Form Data
@@ -59,7 +76,8 @@ export function UsersView({ users, logs }: UsersViewProps) {
         email: "",
         role: "Viewer",
         status: "Active",
-        password: "" // Optional for reset
+        password: "", // Optional for reset
+        organizationId: ""
     })
 
     const [logFilterAction, setLogFilterAction] = useState<string>("ALL")
@@ -69,7 +87,7 @@ export function UsersView({ users, logs }: UsersViewProps) {
             const res = await createUser({ ...formData, status: "Active" })
             if (res.success) {
                 setIsAddOpen(false)
-                setFormData({ username: "", email: "", password: "", role: "Viewer", status: "Active" })
+                setFormData({ username: "", email: "", password: "", role: "Viewer", status: "Active", organizationId: organizations[0]?.id || "" })
                 router.refresh()
             } else {
                 alert(res.message)
@@ -97,7 +115,8 @@ export function UsersView({ users, logs }: UsersViewProps) {
             email: user.email,
             role: user.role,
             status: user.status || "Active",
-            password: ""
+            password: "",
+            organizationId: user.organizationId || ""
         })
         setIsEditOpen(true)
     }
@@ -225,11 +244,127 @@ export function UsersView({ users, logs }: UsersViewProps) {
                 <div className="flex gap-3">
                     {/* LogExportDialog is the source of hydration error, render only when mounted */}
                     {isMounted && <LogExportDialog users={users} />}
+                    <Button
+                        variant="outline"
+                        onClick={() => setIsOrgPanelOpen(!isOrgPanelOpen)}
+                        className="rounded-xl border-slate-200 hover:bg-slate-100 transition-all"
+                    >
+                        <Building2 className="mr-2 h-4 w-4" />
+                        Organizations
+                        {isOrgPanelOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                    </Button>
                     <Button onClick={() => setIsAddOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none hover:shadow-indigo-500/20 active:scale-95 transition-all">
                         <Plus className="mr-2 h-4 w-4" /> Add User
                     </Button>
                 </div>
             </div>
+
+            {/* Organization Management Panel */}
+            {isOrgPanelOpen && (
+                <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    className="px-10 mb-6 z-10"
+                >
+                    <Card className="border-0 shadow-sm bg-white dark:bg-zinc-900 ring-1 ring-slate-100 dark:ring-zinc-800 rounded-2xl">
+                        <CardHeader className="pb-3 border-b border-slate-100 dark:border-zinc-800">
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Building2 className="h-5 w-5 text-indigo-600" />
+                                    <CardTitle className="text-base">Organizations</CardTitle>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="p-4">
+                            {/* Create Form */}
+                            <div className="flex gap-3 mb-4">
+                                <Input
+                                    placeholder="Organization Name"
+                                    value={newOrgName}
+                                    onChange={(e) => {
+                                        setNewOrgName(e.target.value)
+                                        setNewOrgSlug(e.target.value.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""))
+                                    }}
+                                    className="rounded-lg border-slate-200 flex-1"
+                                />
+                                <Input
+                                    placeholder="slug"
+                                    value={newOrgSlug}
+                                    onChange={(e) => setNewOrgSlug(e.target.value)}
+                                    className="rounded-lg border-slate-200 w-[180px] font-mono text-sm"
+                                />
+                                <Button
+                                    onClick={() => {
+                                        if (!newOrgName.trim()) return
+                                        startTransition(async () => {
+                                            const res = await createOrganization({ name: newOrgName, slug: newOrgSlug })
+                                            if (res.success) {
+                                                setNewOrgName("")
+                                                setNewOrgSlug("")
+                                                router.refresh()
+                                            } else {
+                                                alert(res.message)
+                                            }
+                                        })
+                                    }}
+                                    disabled={isPending || !newOrgName.trim()}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 active:scale-95 transition-all"
+                                >
+                                    <Plus className="mr-1 h-4 w-4" /> Create
+                                </Button>
+                            </div>
+
+                            {/* Org List */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                {organizations.map((org) => (
+                                    <div
+                                        key={org.id}
+                                        className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-800 ring-1 ring-slate-100 dark:ring-zinc-700 hover:ring-indigo-200 transition-all"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="h-9 w-9 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-sm">
+                                                {org.name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <p className="font-semibold text-sm text-slate-800 dark:text-slate-200">{org.name}</p>
+                                                <p className="text-xs text-slate-400 font-mono">{org.slug}</p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className="text-xs bg-slate-100 border-slate-200 text-slate-500">
+                                                {(org as any)._count?.members ?? "?"} members
+                                            </Badge>
+                                            <Button
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() => {
+                                                    if (!confirm(`Delete "${org.name}"? This cannot be undone.`)) return
+                                                    startTransition(async () => {
+                                                        const res = await deleteOrganization(org.id)
+                                                        if (res.success) {
+                                                            router.refresh()
+                                                        } else {
+                                                            alert(res.message)
+                                                        }
+                                                    })
+                                                }}
+                                                disabled={isPending}
+                                                className="text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg h-8 w-8"
+                                            >
+                                                <Trash2 className="h-3.5 w-3.5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                                {organizations.length === 0 && (
+                                    <p className="text-sm text-slate-400 p-3">No organizations yet. Create one above.</p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            )}
 
             {/* Widgets */}
             <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-6 px-10 mb-8 z-10">
@@ -267,6 +402,7 @@ export function UsersView({ users, logs }: UsersViewProps) {
                             <TableHeader className="bg-slate-50/50 sticky top-0 z-10">
                                 <TableRow className="hover:bg-transparent border-slate-100">
                                     <TableHead className="font-semibold text-slate-500">User</TableHead>
+                                    <TableHead className="font-semibold text-slate-500">Organization</TableHead>
                                     <TableHead className="font-semibold text-slate-500">Role</TableHead>
                                     <TableHead className="font-semibold text-slate-500">Status</TableHead>
                                     <TableHead className="font-semibold text-slate-500">Joined</TableHead>
@@ -285,6 +421,13 @@ export function UsersView({ users, logs }: UsersViewProps) {
                                                     <span className="font-semibold text-slate-900 text-sm group-hover:text-indigo-600 transition-colors">{user.username}</span>
                                                     <span className="text-xs text-slate-500">{user.email}</span>
                                                 </div>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Badge variant="outline" className="bg-slate-50 text-slate-600 border-slate-200 rounded-lg px-2 py-0.5 font-medium">
+                                                    {user.organizationName || "No Organization"}
+                                                </Badge>
                                             </div>
                                         </TableCell>
                                         <TableCell>
@@ -402,15 +545,33 @@ export function UsersView({ users, logs }: UsersViewProps) {
                                 className="rounded-xl border-slate-200 focus-visible:ring-indigo-500"
                             />
                         </div>
-                        <div className="grid gap-2">
-                            <label className="text-sm font-medium text-slate-700">Password</label>
-                            <Input
-                                value={formData.password}
-                                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                placeholder="******"
-                                type="password"
-                                className="rounded-xl border-slate-200 focus-visible:ring-indigo-500"
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <label className="text-sm font-medium text-slate-700">Password</label>
+                                <Input
+                                    value={formData.password}
+                                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                    placeholder="******"
+                                    type="password"
+                                    className="rounded-xl border-slate-200 focus-visible:ring-indigo-500"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <label className="text-sm font-medium text-slate-700">Organization</label>
+                                <Select
+                                    value={formData.organizationId}
+                                    onValueChange={(val) => setFormData({ ...formData, organizationId: val })}
+                                >
+                                    <SelectTrigger className="rounded-xl border-slate-200 focus:ring-indigo-500">
+                                        <SelectValue placeholder="Select Organization" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {organizations.map((org) => (
+                                            <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 
@@ -480,15 +641,33 @@ export function UsersView({ users, logs }: UsersViewProps) {
                                 className="rounded-xl border-slate-200 focus-visible:ring-indigo-500"
                             />
                         </div>
-                        <div className="grid gap-2">
-                            <label className="text-sm font-medium text-slate-700">Reset Password (Optional)</label>
-                            <Input
-                                value={editFormData.password}
-                                onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
-                                placeholder="New password..."
-                                type="password"
-                                className="rounded-xl border-slate-200 focus-visible:ring-indigo-500"
-                            />
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="grid gap-2">
+                                <label className="text-sm font-medium text-slate-700">Reset Password (Optional)</label>
+                                <Input
+                                    value={editFormData.password}
+                                    onChange={(e) => setEditFormData({ ...editFormData, password: e.target.value })}
+                                    placeholder="New password..."
+                                    type="password"
+                                    className="rounded-xl border-slate-200 focus-visible:ring-indigo-500"
+                                />
+                            </div>
+                            <div className="grid gap-2">
+                                <label className="text-sm font-medium text-slate-700">Organization</label>
+                                <Select
+                                    value={editFormData.organizationId}
+                                    onValueChange={(val) => setEditFormData({ ...editFormData, organizationId: val })}
+                                >
+                                    <SelectTrigger className="rounded-xl border-slate-200 focus:ring-indigo-500">
+                                        <SelectValue placeholder="Select Organization" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-xl">
+                                        {organizations.map((org) => (
+                                            <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 

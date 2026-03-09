@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Plus, Trash2, Calendar, ArrowRight, Save, Layout, Layers, AlertCircle, Map as MapIcon, RotateCcw, ArrowLeft, MoreHorizontal } from "lucide-react"
+import { Plus, Trash2, Calendar, ArrowRight, Save, Layout, Layers, AlertCircle, Map as MapIcon, RotateCcw, ArrowLeft, MoreHorizontal, CheckCircle2, XCircle, SendHorizontal, Undo2, Lock, ShieldCheck } from "lucide-react"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Label } from "@/components/ui/label"
@@ -30,8 +30,30 @@ export default function GapBoard({ project, initialGaps, userRole = "Viewer" }: 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
 
-    const canEdit = userRole === "Admin" || userRole === "Architect"
+    const canEditBase = userRole === "Admin" || userRole === "Architect"
+    // Lock editing if gap is PENDING_REVIEW or APPROVED
+    const isGapLocked = selectedGap?.approvalStatus === 'PENDING_REVIEW' || selectedGap?.approvalStatus === 'APPROVED'
+    const canEdit = canEditBase && !isGapLocked
     const hasChanges = project.changes && project.changes.length > 0
+
+    // Workflow action handler
+    const handleWorkflowAction = async (gapId: string, action: string, rejectionReason?: string) => {
+        try {
+            const res = await fetch(`/api/projects/${project.id}/gaps/${gapId}/workflow`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, rejectionReason })
+            })
+            if (res.ok) {
+                await refreshGaps()
+            } else {
+                const err = await res.json().catch(() => ({}))
+                alert(err.error || 'Workflow action failed')
+            }
+        } catch (error) {
+            console.error('Workflow action error:', error)
+        }
+    }
 
     // Refresh gaps
     const refreshGaps = async () => {
@@ -185,6 +207,7 @@ export default function GapBoard({ project, initialGaps, userRole = "Viewer" }: 
                                 <h3 className="font-semibold text-sm truncate pr-8 text-slate-900">{gap.title}</h3>
                                 <div className="flex items-center gap-2 mt-1">
                                     <GapStatusBadge status={gap.status} />
+                                    <ApprovalStatusBadge status={gap.approvalStatus || 'DRAFT'} />
                                 </div>
                             </div>
                             <p className="text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed">
@@ -210,8 +233,12 @@ export default function GapBoard({ project, initialGaps, userRole = "Viewer" }: 
                         onDelete={() => handleDeleteGap(selectedGap.id)}
                         project={project}
                         canEdit={canEdit}
+                        canEditBase={canEditBase}
+                        isGapLocked={isGapLocked}
+                        userRole={userRole}
                         allGaps={gaps}
                         onAssignChange={handleAssignChange}
+                        onWorkflowAction={handleWorkflowAction}
                     />
                 ) : (
                     <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground bg-slate-50/50 p-8 text-center">
@@ -240,8 +267,23 @@ function GapStatusBadge({ status }: { status: string }) {
     )
 }
 
+function ApprovalStatusBadge({ status }: { status: string }) {
+    const config: Record<string, { bg: string; icon: any; label: string }> = {
+        'DRAFT': { bg: 'bg-slate-100 text-slate-600 border-slate-200', icon: null, label: 'Draft' },
+        'PENDING_REVIEW': { bg: 'bg-yellow-100 text-yellow-700 border-yellow-200', icon: <Lock className="w-2.5 h-2.5 mr-1" />, label: 'Pending Review' },
+        'APPROVED': { bg: 'bg-emerald-100 text-emerald-700 border-emerald-200', icon: <ShieldCheck className="w-2.5 h-2.5 mr-1" />, label: 'Approved' },
+        'REJECTED': { bg: 'bg-red-100 text-red-700 border-red-200', icon: <XCircle className="w-2.5 h-2.5 mr-1" />, label: 'Rejected' },
+    }
+    const c = config[status] || config['DRAFT']
+    return (
+        <span className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border flex items-center ${c.bg}`}>
+            {c.icon}{c.label}
+        </span>
+    )
+}
+
 // ---- Subcomponent: GapDetailView ----
-function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, allGaps, onAssignChange }: any) {
+function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, canEditBase, isGapLocked, userRole, allGaps, onAssignChange, onWorkflowAction }: any) {
     const [activeTab, setActiveTab] = useState("visual")
 
     // State for changing gap details
@@ -249,12 +291,17 @@ function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, allGaps, onA
     const [desc, setDesc] = useState(gap.description || "")
     const [status, setStatus] = useState(gap.status)
     const [isSaving, setIsSaving] = useState(false)
+    const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false)
+    const [rejectionReason, setRejectionReason] = useState("")
+
+    const approvalStatus = gap.approvalStatus || 'DRAFT'
+    const isAdmin = userRole === 'Admin'
+    const isArchitectOrAdmin = userRole === 'Admin' || userRole === 'Architect'
 
     useEffect(() => {
         setTitle(gap.title)
         setDesc(gap.description || "")
         setStatus(gap.status)
-        // Reset tab if gap changes? No, keep user preference often better.
     }, [gap])
 
     const handleSaveDetails = async () => {
@@ -295,6 +342,7 @@ function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, allGaps, onA
                                 <Badge key={tag} variant="outline" className="text-[10px] bg-slate-50">{tag}</Badge>
                             ))}
                             <GapStatusBadge status={status} />
+                            <ApprovalStatusBadge status={approvalStatus} />
                             {canEdit && (
                                 <Select value={status} onValueChange={setStatus}>
                                     <SelectTrigger className="w-[130px] h-8 text-xs border-dashed" id="gap-status-select-trigger">
@@ -314,6 +362,27 @@ function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, allGaps, onA
                         {desc || "No description provided."}
                     </p>
 
+                    {/* Rejection reason banner */}
+                    {approvalStatus === 'REJECTED' && gap.rejectionReason && (
+                        <div className="rounded-lg bg-red-50 border border-red-200 p-3 flex items-start gap-2">
+                            <XCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
+                            <div>
+                                <p className="text-xs font-semibold text-red-700">Rejection Reason</p>
+                                <p className="text-xs text-red-600">{gap.rejectionReason}</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Locked banner */}
+                    {isGapLocked && (
+                        <div className="rounded-lg bg-yellow-50 border border-yellow-200 p-3 flex items-center gap-2">
+                            <Lock className="h-4 w-4 text-yellow-600 shrink-0" />
+                            <p className="text-xs text-yellow-700 font-medium">
+                                {approvalStatus === 'APPROVED' ? 'This gap has been formally approved. Editing is locked.' : 'This gap is pending review. Editing is locked until reviewed.'}
+                            </p>
+                        </div>
+                    )}
+
                     <div className="pt-2 flex items-center justify-between">
                         <div className="text-xs text-slate-400 flex items-center gap-4">
                             {gap.startDate && <span>Start: <span className="font-medium text-slate-600" suppressHydrationWarning>{new Date(gap.startDate).toLocaleDateString()}</span></span>}
@@ -325,11 +394,56 @@ function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, allGaps, onA
                     </div>
                 </div>
 
-                {canEdit && (
-                    <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-500 hover:bg-red-50" onClick={onDelete}>
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
-                )}
+                <div className="flex flex-col items-end gap-2 shrink-0">
+                    {/* Workflow Action Buttons */}
+                    {approvalStatus === 'DRAFT' && isArchitectOrAdmin && (
+                        <Button size="sm" className="gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg" onClick={() => onWorkflowAction(gap.id, 'submit')}>
+                            <SendHorizontal className="h-3.5 w-3.5" /> Submit for Approval
+                        </Button>
+                    )}
+                    {approvalStatus === 'PENDING_REVIEW' && isAdmin && (
+                        <div className="flex items-center gap-2">
+                            <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg" onClick={() => onWorkflowAction(gap.id, 'approve')}>
+                                <CheckCircle2 className="h-3.5 w-3.5" /> Approve
+                            </Button>
+                            <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+                                <DialogTrigger asChild>
+                                    <Button size="sm" variant="outline" className="gap-1.5 text-red-600 border-red-200 hover:bg-red-50 rounded-lg">
+                                        <XCircle className="h-3.5 w-3.5" /> Reject
+                                    </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                    <DialogHeader>
+                                        <DialogTitle>Reject Gap</DialogTitle>
+                                        <DialogDescription>Please provide a reason for rejecting this gap analysis.</DialogDescription>
+                                    </DialogHeader>
+                                    <Textarea placeholder="Reason for rejection..." value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} className="min-h-[100px]" />
+                                    <DialogFooter>
+                                        <Button variant="destructive" disabled={!rejectionReason.trim()} onClick={() => { onWorkflowAction(gap.id, 'reject', rejectionReason); setIsRejectDialogOpen(false); setRejectionReason(''); }}>
+                                            Confirm Rejection
+                                        </Button>
+                                    </DialogFooter>
+                                </DialogContent>
+                            </Dialog>
+                        </div>
+                    )}
+                    {approvalStatus === 'PENDING_REVIEW' && isArchitectOrAdmin && (
+                        <Button size="sm" variant="ghost" className="gap-1.5 text-slate-500 h-7 text-xs" onClick={() => onWorkflowAction(gap.id, 'revert')}>
+                            <Undo2 className="h-3 w-3" /> Revert to Draft
+                        </Button>
+                    )}
+                    {approvalStatus === 'REJECTED' && isArchitectOrAdmin && (
+                        <Button size="sm" variant="outline" className="gap-1.5 text-slate-600 rounded-lg" onClick={() => onWorkflowAction(gap.id, 'revert')}>
+                            <Undo2 className="h-3.5 w-3.5" /> Revert to Draft
+                        </Button>
+                    )}
+
+                    {canEdit && (
+                        <Button variant="ghost" size="icon" className="text-slate-400 hover:text-red-500 hover:bg-red-50" onClick={onDelete}>
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {/* Tabs */}
