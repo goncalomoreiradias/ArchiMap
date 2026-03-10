@@ -1,13 +1,14 @@
 import { db } from "@/lib/db"
 import { ComponentsView } from "@/components/ComponentsView"
-import fs from "fs"
-import path from "path"
+import { getOrgScope } from "@/lib/auth-utils"
 
 const LAYERS = ["Business", "BIAN", "Application", "Data", "Technology"] as const
 
 export default async function ComponentsPage() {
-    // 1. Fetch DB Components
+    // 1. Fetch DB Components scoped to organization
+    const orgFilter = await getOrgScope()
     const dbComponents = await db.component.findMany({
+        where: orgFilter,
         orderBy: { name: 'asc' }
     });
 

@@ -1,7 +1,13 @@
 import { db } from '@/lib/db';
+import { getOrgScope } from '@/lib/auth-utils';
 
 export async function getComponentLifecycleUpdates() {
+    const orgFilter = await getOrgScope();
+
     const roadmaps = await db.gap.findMany({
+        where: {
+            project: orgFilter
+        },
         include: {
             changes: true,
             phases: {

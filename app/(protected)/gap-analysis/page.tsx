@@ -1,11 +1,13 @@
 import { db } from "@/lib/db"
 import { GapAnalysisTabs } from "@/components/gap/GapAnalysisTabs"
+import { getOrgScope } from "@/lib/auth-utils"
 
 export const dynamic = 'force-dynamic'
 
 export default async function GapAnalysisPage() {
-    // Fetch all projects
-    const allProjects = await db.project.findMany()
+    // Fetch all projects scoped to organization
+    const orgFilter = await getOrgScope()
+    const allProjects = await db.project.findMany({ where: orgFilter })
 
     // Enrich with change counts
     const enrichedProjects = await Promise.all(
@@ -37,7 +39,8 @@ export default async function GapAnalysisPage() {
         where: {
             endDate: { not: null },
             project: {
-                status: "Completed"
+                status: "Completed",
+                ...orgFilter
             }
         },
         include: {

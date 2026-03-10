@@ -76,26 +76,35 @@ export const authOptions: NextAuthOptions = {
     ],
     callbacks: {
         async jwt({ token, user }) {
-            // Include role and organizationId inside the JWT
+            // On first login, set id and role from the user object
             if (user) {
                 token.id = user.id;
                 token.role = (user as any).role || "Viewer";
+            }
 
-                // Look up the user's organization membership
+            // Always re-fetch org membership to ensure it's current
+            // (handles the case where org was assigned AFTER initial login)
+            const userId = (token.id as string);
+            if (userId && userId !== "admin-id") {
                 try {
                     const membership = await db.organizationMember.findFirst({
-                        where: { userId: user.id },
+                        where: { userId },
                         include: { organization: true }
                     });
                     if (membership) {
                         token.organizationId = membership.organizationId;
                         token.organizationName = membership.organization.name;
                         token.orgRole = membership.role;
+                    } else {
+                        token.organizationId = undefined;
+                        token.organizationName = undefined;
+                        token.orgRole = undefined;
                     }
                 } catch (e) {
                     console.error('Failed to fetch org membership:', e);
                 }
             }
+
             return token;
         },
         async session({ session, token }) {

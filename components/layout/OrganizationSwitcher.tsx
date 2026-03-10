@@ -26,6 +26,9 @@ export function OrganizationSwitcher() {
     const { data: session, status } = useSession()
     const [organizations, setOrganizations] = React.useState<Organization[]>([])
     const [activeOrgId, setActiveOrgId] = React.useState<string | null>(null)
+    const [mounted, setMounted] = React.useState(false)
+
+    React.useEffect(() => { setMounted(true) }, [])
 
     React.useEffect(() => {
         // Hydrate active org from session
@@ -70,6 +73,21 @@ export function OrganizationSwitcher() {
             // Fallback for users with NO organizations (like the hardcoded admin test user)
             activeOrg = { id: "", name: "System Admin", slug: "system", role: "Super Admin" };
         }
+    }
+
+    // Prevent hydration mismatch — Radix generates different IDs on server vs client
+    if (!mounted) {
+        return (
+            <div className="w-full rounded-xl">
+                <div className="flex items-center gap-3 p-2">
+                    <div className="h-8 w-8 rounded-lg shrink-0 border border-sidebar-border bg-sidebar-accent/50" />
+                    <div className="flex flex-col gap-0.5 items-start text-left flex-1 overflow-hidden">
+                        <span className="text-sm font-semibold truncate text-sidebar-foreground">Loading...</span>
+                        <span className="text-xs text-sidebar-foreground/60 truncate">Workspace</span>
+                    </div>
+                </div>
+            </div>
+        )
     }
 
     return (

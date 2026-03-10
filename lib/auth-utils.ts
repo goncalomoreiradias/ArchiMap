@@ -25,29 +25,34 @@ export async function requireAuth() {
 
 /**
  * Returns a Prisma `where` clause that scopes data to the current user's organization.
- * - Super Admin (admin-id): returns {} (sees everything)
+ * - Super Admin (hardcoded admin-id): returns {} (sees everything across all orgs)
  * - Org-scoped user: returns { organizationId: "<their-org-id>" }
- * - User with no org: returns { organizationId: "__NONE__" } (sees nothing — safe default)
+ * - Authenticated user with no org: returns { id: "impossible" } (sees nothing — safe default)
+ * - Unauthenticated: returns { id: "impossible" } (sees nothing)
  */
-export async function getOrgScope(): Promise<{ organizationId?: string }> {
-    const auth = await requireAuth();
-    if ('error' in auth) return { organizationId: "__NONE__" };
+export async function getOrgScope(): Promise<Record<string, any>> {
+    const session = await getSession();
 
-    const user = (auth.session.user as any);
-
-    // Super Admin bypass — sees all organizations
-    if (user.id === "admin-id" || user.role === "Admin") {
-        // Check if this is the hardcoded super admin
-        if (user.id === "admin-id") return {};
+    if (!session?.user) {
+        // Not authenticated — return impossible filter
+        return { id: "00000000-0000-0000-0000-000000000000" };
     }
 
-    // Normal users: strictly scope to their organization
-    if (auth.organizationId) {
-        return { organizationId: auth.organizationId };
+    const user = session.user as any;
+
+    // The ONLY user that bypasses org scoping is the hardcoded super admin
+    if (user.id === "admin-id") {
+        return {};
     }
 
-    // No organization — return impossible filter for safety
-    return { organizationId: "__NONE__" };
+    // All other users: strictly scope to their organization
+    if (user.organizationId) {
+        return { organizationId: user.organizationId };
+    }
+
+    // User has no organization assigned — return impossible filter (sees nothing)
+    // Note: cannot use null here because existing data may have organizationId=null
+    return { organizationId: "00000000-0000-0000-0000-000000000000" };
 }
 
 export async function requireRole(allowedRoles: Role[]) {
