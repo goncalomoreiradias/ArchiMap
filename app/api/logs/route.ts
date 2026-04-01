@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-import { getOrgScope } from '@/lib/auth-utils';
+import { getOrgScope, getSession } from '@/lib/auth-utils';
 
 export async function GET() {
     try {
         const orgFilter = await getOrgScope();
+        const session = await getSession();
+        const userRole = (session?.user as any)?.role || 'Viewer';
+        const userId = (session?.user as any)?.id;
+
+        let extraFilter = {};
+        if (userRole === 'Architect' && userId) {
+            extraFilter = { userId: userId };
+        }
+
         const logs = await db.activityLog.findMany({
-            where: orgFilter,
+            where: { ...orgFilter, ...extraFilter },
             take: 10,
             orderBy: {
                 timestamp: 'desc'

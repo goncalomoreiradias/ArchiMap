@@ -68,6 +68,8 @@ export default function ProjectDetailPage() {
     const [adoptState, setAdoptState] = useState<'confirm' | 'loading' | 'success' | 'error'>('confirm');
     const [adoptMessage, setAdoptMessage] = useState('');
     const [adoptCount, setAdoptCount] = useState(0);
+    // Submit for approval state
+    const [showSubmitDialog, setShowSubmitDialog] = useState(false);
     const { role } = useUser();
 
     const { catalogData, loadCatalog } = useArchStore();
@@ -430,9 +432,22 @@ export default function ProjectDetailPage() {
             console.error('Error validating connections:', error);
         }
 
-        // All cards have connections - exit edit mode
+        // Changes valid — if user is Architect or Chief Architect, prompt for approval submission
+        if (role === 'Architect' || role === 'Chief Architect') {
+            setShowSubmitDialog(true);
+            return;
+        }
+
+        // Admins can save directly
         setIsEditMode(false);
         setOrphanError(null);
+        fetchChanges();
+    };
+
+    const handleDirectSave = () => {
+        setIsEditMode(false);
+        setOrphanError(null);
+        setShowSubmitDialog(false);
         fetchChanges();
     };
 
@@ -571,11 +586,21 @@ export default function ProjectDetailPage() {
             const res = await fetch(`/api/projects/${projectId}/adopt-target`, {
                 method: 'POST'
             });
-            if (res.ok) {
+
+            if (res.status === 202) {
+                // Architect: submitted for approval
                 const data = await res.json();
-                setAdoptCount(data.count || 0);
                 setAdoptState('success');
-                setAdoptMessage(`Successfully adopted ${data.count || 0} components!`);
+                setAdoptMessage('✅ Your adoption request has been submitted. A Chief Architect will review and approve it before the changes go live.');
+                setTimeout(() => {
+                    setShowAdoptModal(false);
+                    setIsEditMode(false);
+                }, 3500);
+            } else if (res.ok) {
+                const data = await res.json();
+                setAdoptCount(data.details?.count || 0);
+                setAdoptState('success');
+                setAdoptMessage(`Successfully adopted ${data.details?.count || 0} components!`);
 
                 // Refresh data without page reload
                 await fetchProject();
@@ -1131,6 +1156,40 @@ export default function ProjectDetailPage() {
                 component={sdMappingNode}
                 projectId={projectId}
             />
+
+            {/* Submit for Approval Dialog */}
+            {showSubmitDialog && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-8 flex flex-col gap-5">
+                        <div className="flex flex-col items-center text-center gap-3">
+                            <div className="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <FileEdit className="w-8 h-8 text-indigo-600" />
+                            </div>
+                            <h2 className="text-xl font-bold text-slate-900">Submit Changes for Approval</h2>
+                            <p className="text-sm text-slate-500">
+                                Your architectural changes are saved as a draft. To finalize and apply them to the Target Architecture, they must be approved by a <span className="font-semibold text-indigo-600">Chief Architect</span>.
+                            </p>
+                            <p className="text-xs text-slate-400 bg-slate-50 p-3 rounded-lg border border-slate-100 w-full">
+                                Go to <strong>Gap Analysis</strong> → open this project → define a Roadmap → click <strong>&ldquo;Submit for Approval&rdquo;</strong>. The Chief Architect will then review and approve your changes.
+                            </p>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <button
+                                onClick={() => { router.push('/gap-analysis'); setShowSubmitDialog(false); setIsEditMode(false); }}
+                                className="w-full py-2.5 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm transition-colors"
+                            >
+                                Go to Gap Analysis →
+                            </button>
+                            <button
+                                onClick={handleDirectSave}
+                                className="w-full py-2.5 px-4 bg-white hover:bg-slate-50 text-slate-600 border border-slate-200 rounded-xl font-medium text-sm transition-colors"
+                            >
+                                Save as Draft &amp; Exit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

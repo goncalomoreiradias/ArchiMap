@@ -46,9 +46,10 @@ type UsersViewProps = {
     users: User[]
     logs: ActivityLog[]
     organizations?: Organization[]
+    isSuperAdmin?: boolean
 }
 
-export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
+export function UsersView({ users, logs, organizations = [], isSuperAdmin = false }: UsersViewProps) {
     const [isAddOpen, setIsAddOpen] = useState(false)
     const [isEditOpen, setIsEditOpen] = useState(false) // Edit Modal State
     const [editingUser, setEditingUser] = useState<User | null>(null) // User being edited
@@ -223,7 +224,7 @@ export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
             initial="hidden"
             animate="show"
             variants={containerVariants}
-            className="flex flex-col h-[calc(100vh-1rem)] bg-slate-50/50 dark:bg-zinc-950/50 overflow-hidden relative"
+            className="flex flex-col h-[calc(100vh-2rem)] bg-slate-50/50 dark:bg-zinc-950/50 overflow-y-auto overflow-x-hidden relative custom-scrollbar"
         >
             {/* Background Decor */}
             <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -244,15 +245,17 @@ export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
                 <div className="flex gap-3">
                     {/* LogExportDialog is the source of hydration error, render only when mounted */}
                     {isMounted && <LogExportDialog users={users} />}
-                    <Button
-                        variant="outline"
-                        onClick={() => setIsOrgPanelOpen(!isOrgPanelOpen)}
-                        className="rounded-xl border-slate-200 hover:bg-slate-100 transition-all"
-                    >
-                        <Building2 className="mr-2 h-4 w-4" />
-                        Organizations
-                        {isOrgPanelOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
-                    </Button>
+                    {isSuperAdmin && (
+                        <Button
+                            variant="outline"
+                            onClick={() => setIsOrgPanelOpen(!isOrgPanelOpen)}
+                            className="rounded-xl border-slate-200 hover:bg-slate-100 transition-all"
+                        >
+                            <Building2 className="mr-2 h-4 w-4" />
+                            Organizations
+                            {isOrgPanelOpen ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />}
+                        </Button>
+                    )}
                     <Button onClick={() => setIsAddOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-lg shadow-indigo-200 dark:shadow-none hover:shadow-indigo-500/20 active:scale-95 transition-all">
                         <Plus className="mr-2 h-4 w-4" /> Add User
                     </Button>
@@ -389,7 +392,7 @@ export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
             </motion.div>
 
             {/* Content */}
-            <motion.div variants={itemVariants} className="flex-1 overflow-hidden px-10 pb-8 z-10">
+            <motion.div variants={itemVariants} className="flex-1 overflow-hidden px-10 pb-8 z-10 min-h-[500px]">
                 <Card className="border-0 shadow-sm bg-white dark:bg-zinc-900 ring-1 ring-slate-100 dark:ring-zinc-800 rounded-2xl h-full flex flex-col">
                     <CardHeader className="border-b border-slate-100 dark:border-zinc-800 pb-4">
                         <div className="flex items-center justify-between">
@@ -530,6 +533,7 @@ export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
                                     <SelectContent className="rounded-xl">
                                         <SelectItem value="Viewer">Viewer</SelectItem>
                                         <SelectItem value="Architect">Architect</SelectItem>
+                                        <SelectItem value="Chief Architect">Chief Architect</SelectItem>
                                         <SelectItem value="Admin">Admin</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -556,22 +560,24 @@ export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
                                     className="rounded-xl border-slate-200 focus-visible:ring-indigo-500"
                                 />
                             </div>
-                            <div className="grid gap-2">
-                                <label className="text-sm font-medium text-slate-700">Organization</label>
-                                <Select
-                                    value={formData.organizationId}
-                                    onValueChange={(val) => setFormData({ ...formData, organizationId: val })}
-                                >
-                                    <SelectTrigger className="rounded-xl border-slate-200 focus:ring-indigo-500">
-                                        <SelectValue placeholder="Select Organization" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl">
-                                        {organizations.map((org) => (
-                                            <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {isSuperAdmin && (
+                                <div className="grid gap-2">
+                                    <label className="text-sm font-medium text-slate-700">Organization</label>
+                                    <Select
+                                        value={formData.organizationId}
+                                        onValueChange={(val) => setFormData({ ...formData, organizationId: val })}
+                                    >
+                                        <SelectTrigger className="rounded-xl border-slate-200 focus:ring-indigo-500">
+                                            <SelectValue placeholder="Select Organization" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl">
+                                            {organizations.map((org) => (
+                                                <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -610,6 +616,7 @@ export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
                                     <SelectContent className="rounded-xl">
                                         <SelectItem value="Viewer">Viewer</SelectItem>
                                         <SelectItem value="Architect">Architect</SelectItem>
+                                        <SelectItem value="Chief Architect">Chief Architect</SelectItem>
                                         <SelectItem value="Admin">Admin</SelectItem>
                                     </SelectContent>
                                 </Select>
@@ -652,22 +659,24 @@ export function UsersView({ users, logs, organizations = [] }: UsersViewProps) {
                                     className="rounded-xl border-slate-200 focus-visible:ring-indigo-500"
                                 />
                             </div>
-                            <div className="grid gap-2">
-                                <label className="text-sm font-medium text-slate-700">Organization</label>
-                                <Select
-                                    value={editFormData.organizationId}
-                                    onValueChange={(val) => setEditFormData({ ...editFormData, organizationId: val })}
-                                >
-                                    <SelectTrigger className="rounded-xl border-slate-200 focus:ring-indigo-500">
-                                        <SelectValue placeholder="Select Organization" />
-                                    </SelectTrigger>
-                                    <SelectContent className="rounded-xl">
-                                        {organizations.map((org) => (
-                                            <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
+                            {isSuperAdmin && (
+                                <div className="grid gap-2">
+                                    <label className="text-sm font-medium text-slate-700">Organization</label>
+                                    <Select
+                                        value={editFormData.organizationId}
+                                        onValueChange={(val) => setEditFormData({ ...editFormData, organizationId: val })}
+                                    >
+                                        <SelectTrigger className="rounded-xl border-slate-200 focus:ring-indigo-500">
+                                            <SelectValue placeholder="Select Organization" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-xl">
+                                            {organizations.map((org) => (
+                                                <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            )}
                         </div>
                     </div>
 

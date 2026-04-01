@@ -49,5 +49,5 @@ export default async function UsersPage() {
         timestamp: log.timestamp.toISOString()
     }))
 
-    return <UsersView users={serializedUsers} logs={serializedLogs} organizations={organizations} />
+    return <UsersView users={serializedUsers} logs={serializedLogs} organizations={organizations} isSuperAdmin={isSuperAdmin} />
 }

@@ -30,7 +30,7 @@ export default function GapBoard({ project, initialGaps, userRole = "Viewer" }: 
     const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
 
-    const canEditBase = userRole === "Admin" || userRole === "Architect"
+    const canEditBase = userRole === "Admin" || userRole === "Architect" || userRole === "Chief Architect"
     // Lock editing if gap is PENDING_REVIEW or APPROVED
     const isGapLocked = selectedGap?.approvalStatus === 'PENDING_REVIEW' || selectedGap?.approvalStatus === 'APPROVED'
     const canEdit = canEditBase && !isGapLocked
@@ -295,8 +295,8 @@ function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, canEditBase,
     const [rejectionReason, setRejectionReason] = useState("")
 
     const approvalStatus = gap.approvalStatus || 'DRAFT'
-    const isAdmin = userRole === 'Admin'
-    const isArchitectOrAdmin = userRole === 'Admin' || userRole === 'Architect'
+    const isApprover = userRole === 'Admin' || userRole === 'Chief Architect'
+    const isArchitectOrAdmin = userRole === 'Admin' || userRole === 'Architect' || userRole === 'Chief Architect'
 
     useEffect(() => {
         setTitle(gap.title)
@@ -401,7 +401,7 @@ function GapDetailView({ gap, onUpdate, onDelete, project, canEdit, canEditBase,
                             <SendHorizontal className="h-3.5 w-3.5" /> Submit for Approval
                         </Button>
                     )}
-                    {approvalStatus === 'PENDING_REVIEW' && isAdmin && (
+                    {approvalStatus === 'PENDING_REVIEW' && isApprover && (
                         <div className="flex items-center gap-2">
                             <Button size="sm" className="gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg" onClick={() => onWorkflowAction(gap.id, 'approve')}>
                                 <CheckCircle2 className="h-3.5 w-3.5" /> Approve

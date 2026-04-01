@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/lib/db';
-
-// ... imports
 import { detectConflicts } from '@/lib/conflicts';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 
 export async function POST(
     request: NextRequest,
@@ -11,12 +11,60 @@ export async function POST(
     try {
         const { id: projectId } = await context.params;
 
+        // --- Role Guard ---
+        const session = await getServerSession(authOptions);
+        const userRole = (session?.user as any)?.role || 'Viewer';
+        const sessionUserId = (session?.user as any)?.id;
+        const orgId = (session?.user as any)?.organizationId;
+
         // Parse optional body for status update
-        let body = {};
+        let body: any = {};
         try {
             body = await request.json();
         } catch (e) { }
-        const { status } = body as { status?: string };
+        const { status, _fromApproval } = body as { status?: string; _fromApproval?: boolean };
+
+        // Architects cannot adopt directly — they submit for approval
+        // (Unless called internally from the approval workflow)
+        if (userRole === 'Architect' && !_fromApproval) {
+            const project = await db.project.findUnique({ where: { id: projectId } });
+            if (!project) return NextResponse.json({ error: 'Project not found' }, { status: 404 });
+
+            // Create a pending adoption approval gap
+            const adoptionGap = await db.gap.create({
+                data: {
+                    projectId,
+                    title: `Adoption Request: ${project.name}`,
+                    description: `An Architect has requested to adopt the Target state as the new AS-IS baseline for project "${project.name}". Please review and approve.`,
+                    status: 'In Progress',
+                    approvalStatus: 'PENDING_REVIEW',
+                    metadata: JSON.stringify({ type: 'ADOPTION_REQUEST', projectId }),
+                    organizationId: orgId || project.organizationId || null,
+                }
+            });
+
+            // Log it
+            if (sessionUserId) {
+                await db.activityLog.create({
+                    data: {
+                        userId: sessionUserId,
+                        action: 'adoption.request',
+                        resource: `Project: ${project.name}`,
+                        details: JSON.stringify({ projectId, gapId: adoptionGap.id }),
+                        organizationId: orgId || project.organizationId || null
+                    }
+                });
+            }
+
+            return NextResponse.json({
+                success: true,
+                pending: true,
+                message: 'Adoption submitted for approval. A Chief Architect will review your request.',
+                gapId: adoptionGap.id
+            }, { status: 202 });
+        }
+
+        // --- Admin / Chief Architect proceed with actual adoption ---
 
         let userId = request.cookies.get("userId")?.value;
 

@@ -481,6 +481,35 @@ export async function POST(
 
             // 3a. Catalog relationships (STRICT: both ends must be in project context)
             for (const rel of catalog.relationships) {
+                // Handle modern sourceId/targetId format (from DB)
+                if (rel.sourceId && rel.targetId) {
+                    if (!validComponentIds.has(rel.sourceId) || !validComponentIds.has(rel.targetId)) continue;
+
+                    const edgeId = `${rel.sourceId}-${rel.targetId}`;
+                    if (edgeSet.has(edgeId)) continue;
+
+                    const isExplicitlyRemoved = removedRelations.has(edgeId) || removedRelations.has(`REL-${edgeId}`);
+                    const isNodeRemoved = removedComponents.has(rel.sourceId) || removedComponents.has(rel.targetId);
+                    const isRemoved = isExplicitlyRemoved || isNodeRemoved;
+
+                    if (viewType === 'target' && isRemoved) continue;
+
+                    edges.push({
+                        id: edgeId,
+                        source: rel.sourceId,
+                        target: rel.targetId,
+                        type: 'smoothstep',
+                        animated: false,
+                        style: isRemoved
+                            ? { stroke: '#ef4444', strokeWidth: 2, strokeDasharray: '4', opacity: 0.6 }
+                            : { stroke: '#94a3b8', strokeWidth: 2 },
+                        data: { changeStatus: isRemoved ? 'removed' : undefined }
+                    });
+                    edgeSet.add(edgeId);
+                    continue;
+                }
+
+                // Fallback: legacy {businessCapabilityId, dataCapabilityId} structure
                 // Build possible edges from this relationship row
                 const pairs = [
                     { source: rel.businessCapabilityId, target: rel.dataCapabilityId },
@@ -502,19 +531,7 @@ export async function POST(
                     const isNodeRemoved = removedComponents.has(pair.source) || removedComponents.has(pair.target);
                     const isRemoved = isExplicitlyRemoved || isNodeRemoved;
 
-                    if (isRemoved) {
-                        if (viewType === 'target') continue; // In target, it's gone
-                        // In GAP, continue below to render it as removed
-                    }
-
-                    // For Target view, skip if either end is removed
-                    if (viewType === 'target') {
-                        if (removedComponents.has(pair.source) || removedComponents.has(pair.target)) continue;
-                    }
-
-                    // Should we show this edge?
-                    // If it's removed, we show it only in GAP view.
-                    // If it's not removed, we show it.
+                    if (viewType === 'target' && isRemoved) continue;
 
                     edges.push({
                         id: edgeId,

@@ -13,7 +13,7 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string; gapId: string } }
+    context: { params: Promise<{ id: string; gapId: string }> }
 ) {
     try {
         const session = await getServerSession(authOptions);
@@ -21,7 +21,7 @@ export async function PATCH(
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { id: projectId, gapId } = params;
+        const { id: projectId, gapId } = await context.params;
         const body = await request.json();
         const { action, rejectionReason } = body;
 
@@ -44,17 +44,17 @@ export async function PATCH(
 
         switch (action) {
             case 'submit':
-                // Architects and Admins can submit for review
-                if (!['Architect', 'Admin'].includes(userRole)) {
+                // Architects, Chief Architects and Admins can submit for review
+                if (!['Architect', 'Chief Architect', 'Admin'].includes(userRole)) {
                     return NextResponse.json({ error: 'Only Architects or Admins can submit for review' }, { status: 403 });
                 }
                 newStatus = 'PENDING_REVIEW';
                 break;
 
             case 'approve':
-                // Only Admins can approve
-                if (userRole !== 'Admin') {
-                    return NextResponse.json({ error: 'Only Admins can approve gaps' }, { status: 403 });
+                // Only Chief Architects and Admins can approve
+                if (!['Chief Architect', 'Admin'].includes(userRole)) {
+                    return NextResponse.json({ error: 'Only Chief Architects or Admins can approve gaps' }, { status: 403 });
                 }
                 if (currentStatus !== 'PENDING_REVIEW') {
                     return NextResponse.json({ error: 'Gap must be in PENDING_REVIEW to approve' }, { status: 400 });
@@ -66,9 +66,9 @@ export async function PATCH(
                 break;
 
             case 'reject':
-                // Only Admins can reject
-                if (userRole !== 'Admin') {
-                    return NextResponse.json({ error: 'Only Admins can reject gaps' }, { status: 403 });
+                // Only Chief Architects and Admins can reject
+                if (!['Chief Architect', 'Admin'].includes(userRole)) {
+                    return NextResponse.json({ error: 'Only Chief Architects or Admins can reject gaps' }, { status: 403 });
                 }
                 if (currentStatus !== 'PENDING_REVIEW') {
                     return NextResponse.json({ error: 'Gap must be in PENDING_REVIEW to reject' }, { status: 400 });
@@ -113,6 +113,70 @@ export async function PATCH(
                 ...updateData
             }
         });
+
+        // --- If this is an ADOPTION_REQUEST and it was just APPROVED, trigger actual adoption ---
+        if (action === 'approve') {
+            try {
+                const meta = gap.metadata ? JSON.parse(gap.metadata as string) : {};
+                if (meta.type === 'ADOPTION_REQUEST') {
+                    // Detect base URL from request headers or environment
+                    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+                    const host = request.headers.get('host');
+                    const baseUrl = host ? `${protocol}://${host}` : process.env.NEXTAUTH_URL || 'http://localhost:3000';
+
+                    // Call adopt-target for the project internally
+                    const adoptRes = await fetch(
+                        `${baseUrl}/api/projects/${projectId}/adopt-target`,
+                        {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                // Pass session cookie from request headers for auth
+                                'Cookie': request.headers.get('cookie') || ''
+                            },
+                            body: JSON.stringify({ _fromApproval: true })
+                        }
+                    );
+                    if (!adoptRes.ok) {
+                        const adoptErr = await adoptRes.json().catch(() => ({}));
+                        console.error('[Workflow] Adoption trigger failed:', adoptErr);
+                        // Optional: return error to UI? Or keep it quiet?
+                        // For now, let's at least log it properly.
+                    }
+                } else if (meta.type === 'COMPONENT_EDIT_REQUEST') {
+                    // Call component update for the catalog internally
+                    const compId = meta.componentId;
+                    const compData = meta.requestedChanges;
+
+                    if (!compId) {
+                        console.error('[Workflow] Missing componentId in metadata');
+                        return;
+                    }
+
+                    const protocol = request.headers.get('x-forwarded-proto') || 'http';
+                    const host = request.headers.get('host');
+                    const baseUrl = host ? `${protocol}://${host}` : process.env.NEXTAUTH_URL || 'http://localhost:3000';
+
+                    const compRes = await fetch(
+                        `${baseUrl}/api/components/${compId}`,
+                        {
+                            method: 'PATCH',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Cookie': request.headers.get('cookie') || ''
+                            },
+                            body: JSON.stringify({ ...compData, _fromApproval: true })
+                        }
+                    );
+                    if (!compRes.ok) {
+                        const compErr = await compRes.json().catch(() => ({}));
+                        console.error('[Workflow] Component update trigger failed:', compErr);
+                    }
+                }
+            } catch (metaErr) {
+                console.error('[Workflow] Failed to parse adoption request metadata:', metaErr);
+            }
+        }
 
         // Log the workflow action in the ActivityLog
         await db.activityLog.create({

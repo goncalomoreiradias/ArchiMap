@@ -39,6 +39,22 @@ export function ComponentsView({ groupedComponents }: ComponentsViewProps) {
         }))
     }, [groupedComponents])
 
+    // Handle auto-open via URL parameter
+    useState(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const id = params.get('id');
+            if (id && data.length > 0) {
+                const comp = data.find(c => c.id === id);
+                if (comp) {
+                    // We need to wait for mount to call handleView properly or just set initial state
+                    // But simplified for now:
+                    setTimeout(() => handleView(comp as any), 100);
+                }
+            }
+        }
+    });
+
     // Calculate stats
     const stats = useMemo(() => ({
         total: data.length,

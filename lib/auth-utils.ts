@@ -3,7 +3,7 @@ import { authOptions } from "./auth";
 import { NextResponse } from "next/server";
 import { db } from "./db";
 
-export type Role = "Admin" | "Architect" | "Viewer";
+export type Role = "Admin" | "Chief Architect" | "Architect" | "Viewer";
 
 export async function getSession() {
     return await getServerSession(authOptions);
@@ -78,7 +78,7 @@ export async function requireRole(allowedRoles: Role[]) {
 
 // Shorthand for typical write operations
 export async function requireEditor() {
-    return requireRole(["Admin", "Architect"]);
+    return requireRole(["Admin", "Chief Architect", "Architect"]);
 }
 
 // Shorthand for Admin only operations

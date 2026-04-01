@@ -15,13 +15,15 @@ import {
   ChevronRight,
   Settings,
   LogOut,
-  History
+  History,
+  ClipboardCheck
 } from "lucide-react"
 
 import { useUIStore } from "@/store/useUIStore"
 import { motion, AnimatePresence } from "framer-motion"
 import { logout } from "@/app/actions/auth"
 import { OrganizationSwitcher } from "./OrganizationSwitcher"
+import { useSession } from "next-auth/react"
 
 const routes = [
   {
@@ -61,6 +63,12 @@ const routes = [
     color: "text-amber-500",
   },
   {
+    label: "Approvals",
+    icon: ClipboardCheck,
+    href: "/approvals",
+    color: "text-red-500",
+  },
+  {
     label: "Import",
     icon: Upload,
     href: "/import",
@@ -77,12 +85,20 @@ const routes = [
 export function Sidebar({ userRole }: { userRole?: string }) {
   const pathname = usePathname()
   const { isSidebarCollapsed, toggleSidebar } = useUIStore()
+  const { data: session } = useSession()
+  const orgName = (session?.user as any)?.organizationName || "Workspace"
 
   // RBAC Filtering
   const filteredRoutes = routes.filter(route => {
     if (userRole === 'Admin') return true; // Admin sees all
 
+    // Architect sees everything except Users and Approvals
     if (userRole === 'Architect') {
+      return route.label !== 'Users' && route.label !== 'Approvals';
+    }
+
+    // Chief Architect sees everything except Users
+    if (userRole === 'Chief Architect') {
       return route.label !== 'Users';
     }
 
@@ -116,7 +132,7 @@ export function Sidebar({ userRole }: { userRole?: string }) {
               className="flex flex-col"
             >
               <span className="font-bold text-sidebar-foreground tracking-tight text-lg">ArchMap</span>
-              <span className="text-[10px] text-sidebar-foreground/60 font-medium uppercase tracking-wider">Enterprise</span>
+              <span className="text-[10px] text-sidebar-foreground/60 font-medium uppercase tracking-wider truncate max-w-[140px]" title={orgName}>{orgName}</span>
             </motion.div>
           )}
         </div>

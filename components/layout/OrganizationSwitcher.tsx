@@ -90,21 +90,52 @@ export function OrganizationSwitcher() {
         )
     }
 
+    // Determine if the current user is Super Admin
+    const isSuperAdmin = session?.user && ((session.user as any).id === "admin-id" || !(session.user as any).organizationId);
+
+    if (!isSuperAdmin) {
+        const userName = (session?.user as any)?.username || (session?.user as any)?.name || activeOrg.name;
+        const userSystemRole = (session?.user as any)?.role || activeOrg.role || "Viewer";
+        
+        return (
+            <div className="w-full rounded-xl transition-colors outline-none cursor-default select-none">
+                <div className="flex items-center gap-3 p-2">
+                    <Avatar className="h-8 w-8 rounded-lg shrink-0 border border-sidebar-border bg-sidebar-accent/50">
+                        <AvatarFallback className="rounded-lg bg-indigo-500/10 text-indigo-500 font-medium">
+                            {userName.charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                    </Avatar>
+                    <div className="flex flex-col gap-0.5 items-start text-left flex-1 overflow-hidden">
+                        <span className="text-sm font-semibold truncate text-sidebar-foreground">
+                            {userName}
+                        </span>
+                        <span className="text-xs text-sidebar-foreground/60 truncate uppercase tracking-wider font-medium">
+                            {userSystemRole}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    const userName = (session?.user as any)?.username || (session?.user as any)?.name || activeOrg.name;
+    const userSystemRole = (session?.user as any)?.role || activeOrg.role || "Super Admin";
+
     return (
         <DropdownMenu>
             <DropdownMenuTrigger className="w-full rounded-xl ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 hover:bg-sidebar-accent/50 outline-none">
                 <div className="flex items-center gap-3 p-2">
                     <Avatar className="h-8 w-8 rounded-lg shrink-0 border border-sidebar-border bg-sidebar-accent/50">
                         <AvatarFallback className="rounded-lg bg-indigo-500/10 text-indigo-500 font-medium select-none">
-                            {activeOrg.name.charAt(0).toUpperCase()}
+                            {userName.charAt(0).toUpperCase()}
                         </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col gap-0.5 items-start text-left flex-1 overflow-hidden">
                         <span className="text-sm font-semibold truncate text-sidebar-foreground">
-                            {activeOrg.name}
+                            {userName}
                         </span>
-                        <span className="text-xs text-sidebar-foreground/60 truncate">
-                            {activeOrg.role || "Workspace"}
+                        <span className="text-xs text-sidebar-foreground/60 truncate uppercase tracking-wider font-medium">
+                            {userSystemRole}
                         </span>
                     </div>
                     <ChevronsUpDown className="h-4 w-4 text-sidebar-foreground/50 shrink-0" />

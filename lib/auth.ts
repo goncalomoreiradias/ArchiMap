@@ -54,9 +54,12 @@ export const authOptions: NextAuthOptions = {
                     throw new Error("Invalid credentials");
                 }
 
-                // Check if user is suspended/inactive
+                // Check if user is suspended/inactive/pending
+                if (user.status === "Pending") {
+                    throw new Error("A sua conta aguarda aprovação do Administrador desta Organização.");
+                }
                 if (user.status && user.status !== "Active") {
-                    throw new Error("Account is suspended. Contact your administrator.");
+                    throw new Error("Account is suspended or invalid. Contact your administrator.");
                 }
 
                 const isValid = await bcrypt.compare(credentials.password, user.passwordHash);

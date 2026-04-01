@@ -25,6 +25,7 @@ import {
     Pie
 } from "recharts";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface DashboardStats {
     totalComponents: number;
@@ -43,6 +44,8 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [loading, setLoading] = useState(true);
     const router = useRouter();
+    const { data: session } = useSession();
+    const userRole = (session?.user as any)?.role || "Viewer";
 
     useEffect(() => {
         async function loadStats() {
@@ -210,10 +213,12 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Recent Activity & Access Logs */}
-                        <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <RecentActivity />
-                            <AccessLogs />
-                        </div>
+                        {userRole !== "Viewer" && (
+                            <div className={`mt-8 grid grid-cols-1 ${userRole === "Admin" ? "md:grid-cols-2" : ""} gap-8`}>
+                                <RecentActivity />
+                                {userRole === "Admin" && <AccessLogs />}
+                            </div>
+                        )}
                     </motion.div>
 
                     {/* Quick Access / Breakdown */}

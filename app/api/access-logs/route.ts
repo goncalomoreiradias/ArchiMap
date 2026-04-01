@@ -1,6 +1,14 @@
 import { NextResponse } from 'next/server';
+import { getSession } from '@/lib/auth-utils';
 
 export async function GET() {
+    const session = await getSession();
+    const userRole = (session?.user as any)?.role;
+
+    if (userRole !== 'Admin') {
+        return NextResponse.json({ error: 'Unauthorized. Admins only.' }, { status: 403 });
+    }
+
     // Mock Data for Access Logs
     // In a real app, this would query Prisma.ActivityLog
     const logs = [
