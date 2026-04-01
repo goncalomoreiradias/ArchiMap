@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { motion } from "framer-motion"
-import { ConnectingCardsBackground } from "@/components/auth/ConnectingCardsBackground"
-import { MockArchitectureView } from "@/components/auth/MockArchitectureView"
+import { LoginCarousel } from "@/components/auth/LoginCarousel"
 import { Loader2 } from "lucide-react"
 
 export default function LoginPage() {
@@ -105,21 +104,12 @@ export default function LoginPage() {
                     <p className="text-sm text-zinc-500">
                         Don't have an account? <a href="#" className="text-indigo-600 font-medium hover:underline">Contact Admin</a>
                     </p>
-                    <div className="mt-8 p-4 bg-zinc-50 dark:bg-zinc-900 rounded-lg border border-dashed border-zinc-200 dark:border-zinc-800">
-                        <p className="text-xs text-zinc-400 text-center">Demo Credentials: <strong>admin / admin</strong></p>
-                    </div>
                 </div>
             </div>
 
-            {/* Right Side - Animation */}
-            <div className="flex-1 relative hidden lg:flex items-center justify-center p-8 bg-zinc-900 overflow-hidden">
-                <div className="absolute inset-0 z-0">
-                    <ConnectingCardsBackground />
-                </div>
-
-                <div className="relative z-10 w-full max-w-2xl h-full flex flex-col items-center justify-center">
-                    <MockArchitectureView />
-                </div>
+            {/* Right Side - Animation / Carousel */}
+            <div className="flex-1 relative hidden lg:flex items-center justify-center bg-zinc-900 p-0 overflow-hidden">
+                <LoginCarousel />
             </div>
         </div>
     )
